@@ -1,0 +1,73 @@
+package com.Wissam.EasyApplier.Controller;
+
+import java.util.UUID;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
+import com.Wissam.EasyApplier.Email.JavaMailServiceImpl;
+import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
+import com.Wissam.EasyApplier.Model.User;
+import com.Wissam.EasyApplier.Repository.UserRepository;
+import com.Wissam.EasyApplier.Services.IServices.IAuthService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+  private final IAuthService authService;
+  private final JwtUtils jwtUtils;
+  private final UserRepository userRepo;
+  private final JavaMailServiceImpl javaMailSender;
+
+  @GetMapping("/hello")
+  public String hello() {
+    return "hello";
+  }
+
+  @GetMapping("/auth/failure")
+  public String failure() {
+    return "Failed to log in, Please try again later.";
+  }
+
+  @PostMapping("/login")
+  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
+    authService.login(email, password);
+    String token = jwtUtils.generateToken(email);
+    Cookie cookie = new Cookie("jwt", token);
+    cookie.setMaxAge(3600);
+    cookie.setSecure(true);
+    cookie.setHttpOnly(true);
+    cookie.setPath("/");
+    response.addCookie(cookie);
+    return true;
+  }
+
+  @PostMapping("/register")
+  public String register(@RequestParam String email, @RequestParam String password) {
+    String uuid = UUID.randomUUID().toString();
+    javaMailSender.sendConfirmSignUpEmail(email, "http://localhost:8080/auth/verify/" + uuid);
+    return authService.register(email, password, uuid);
+  }
+
+  @GetMapping("/verify/{uuid}")
+  public boolean verifyEmail(@PathVariable String uuid) {
+    User user = userRepo.findByUuid(uuid)
+        .orElseThrow(() -> new UserNotFoundException("User with uuid " + uuid + " not found"));
+
+    user.setVerified(true);
+    authService.verifyUser(user);
+    return true;
+  }
+
+}
