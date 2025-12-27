@@ -2,14 +2,16 @@ package com.Wissam.EasyApplier.Controller;
 
 import java.util.UUID;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
+import com.Wissam.EasyApplier.Dto.User.UserRequest;
 import com.Wissam.EasyApplier.Email.JavaMailServiceImpl;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
@@ -23,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@CrossOrigin("http://localhost:4200")
 public class AuthController {
 
   private final IAuthService authService;
@@ -41,7 +44,9 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
+  public boolean login(@RequestBody UserRequest userRequest, HttpServletResponse response) {
+    String email = userRequest.getEmail();
+    String password = userRequest.getPassword();
     authService.login(email, password);
     String token = jwtUtils.generateToken(email);
     Cookie cookie = new Cookie("jwt", token);
@@ -54,7 +59,9 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public String register(@RequestParam String email, @RequestParam String password) {
+  public String register(@RequestBody UserRequest userRequest) {
+    String email = userRequest.getEmail();
+    String password = userRequest.getPassword();
     String uuid = UUID.randomUUID().toString();
     javaMailSender.sendConfirmSignUpEmail(email, "http://localhost:8080/auth/verify/" + uuid);
     return authService.register(email, password, uuid);

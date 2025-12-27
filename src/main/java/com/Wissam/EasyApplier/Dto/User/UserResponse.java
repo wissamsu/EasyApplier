@@ -26,7 +26,6 @@ public class UserResponse {
   @NotNull
   private String email;
 
-  @NotNull
   private UserRole role;
 
   @NotNull

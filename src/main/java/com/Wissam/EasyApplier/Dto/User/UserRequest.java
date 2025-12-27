@@ -22,7 +22,6 @@ public class UserRequest {
   @NotNull
   private String password;
 
-  @NotNull
   private UserRole role;
 
 }

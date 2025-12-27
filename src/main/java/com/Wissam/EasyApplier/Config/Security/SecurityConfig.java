@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,16 +31,20 @@ public class SecurityConfig {
   private final CustomUserDetailsService userDetailsService;
   private final JwtFilterChain jwtFilterChain;
   private final OAuth2SuccessHandler oath2SuccesHandler;
+  private final AuthenticationEntryPointImpl authEntryPoint;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
-        .cors(Customizer.withDefaults())
+        .cors(cors -> cors.configurationSource(corsConfig()))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .authenticationProvider(authProvider())
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
                 "/auth/**",
+                "/error",
                 "/oauth2/**",
                 "/login",
                 "/v3/api-docs/**",
@@ -50,6 +53,7 @@ public class SecurityConfig {
             .anyRequest().authenticated())
         .oauth2Login(oath2 -> oath2.successHandler(oath2SuccesHandler).defaultSuccessUrl("/auth/hello")
             .failureUrl("/auth/failure"))
+        .formLogin(form -> form.disable())
         .addFilterBefore(jwtFilterChain, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
@@ -62,8 +66,8 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfig() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("*"));
-    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+    configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowCredentials(true);
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setMaxAge(3600L);

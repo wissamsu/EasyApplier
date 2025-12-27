@@ -27,7 +27,7 @@ public class Linkedin {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String li_atCookie;
+  private String liatCookie;
 
   private String email;
 
