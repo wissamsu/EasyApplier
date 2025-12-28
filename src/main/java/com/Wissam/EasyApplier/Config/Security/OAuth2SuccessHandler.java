@@ -37,6 +37,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     log.info("Email: {}", email);
 
     log.info("OAuth2 login 2");
+    if (email == null || email.isEmpty()) {
+      response.sendRedirect("http://localhost:4200/Home");
+      return;
+    }
     User user = userRepo.findByEmail(email).orElseGet(() -> {
       User newUser = User.builder()
           .email(email)
@@ -58,6 +62,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     log.info("OAuth2 login 4");
     response.addCookie(cookie);
-    response.sendRedirect("http://localhost:8080/auth/hello");
+    response.sendRedirect("http://localhost:4200/Home");
   }
 }

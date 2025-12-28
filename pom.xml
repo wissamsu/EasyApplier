@@ -31,6 +31,11 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.21.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
@@ -56,22 +61,17 @@
       <artifactId>java-dotenv</artifactId>
       <version>5.2.2</version>
     </dependency>
-    <!-- JJWT API, primarily for interfaces -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
       <version>0.13.0</version>
     </dependency>
-
-    <!-- JJWT Implementation (runtime code) -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
       <version>0.13.0</version>
       <scope>runtime</scope>
     </dependency>
-
-    <!-- JJWT Jackson extension (JSON processing) -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>

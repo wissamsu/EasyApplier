@@ -16,7 +16,12 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
-    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+    String acceptHeader = request.getHeader("Accept");
+    if (acceptHeader != null && acceptHeader.contains("text/html")) {
+      response.sendRedirect("/login");
+    } else {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+    }
   }
 
 }

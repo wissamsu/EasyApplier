@@ -2,7 +2,6 @@ package com.Wissam.EasyApplier.Controller;
 
 import java.util.UUID;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@CrossOrigin("http://localhost:4200")
 public class AuthController {
 
   private final IAuthService authService;
@@ -33,14 +31,14 @@ public class AuthController {
   private final UserRepository userRepo;
   private final JavaMailServiceImpl javaMailSender;
 
+  @GetMapping("/failure")
+  public String failure() {
+    return "fuck";
+  }
+
   @GetMapping("/hello")
   public String hello() {
     return "hello";
-  }
-
-  @GetMapping("/auth/failure")
-  public String failure() {
-    return "Failed to log in, Please try again later.";
   }
 
   @PostMapping("/login")
