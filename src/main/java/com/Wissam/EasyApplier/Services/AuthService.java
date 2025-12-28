@@ -29,7 +29,7 @@ public class AuthService implements IAuthService {
   public boolean login(String email, String password) {
     User user = userRepo.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
     boolean isValid = passwordEncoder.matches(password, user.getPassword());
-    if (userRepo.existsByEmail(email) && isValid) {
+    if (isValid && user.isVerified()) {
       Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
       SecurityContextHolder.getContext().setAuthentication(auth);
       return true;
