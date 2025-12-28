@@ -19,16 +19,16 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
 
-  @NotNull
+  @NotNull(message = "Id is required")
   private Long id;
 
-  @Email
-  @NotNull
+  @Email(message = "Email is not valid")
+  @NotNull(message = "Email is required")
   private String email;
 
   private UserRole role;
 
-  @NotNull
+  @NotNull(message = "Created at is required")
   private LocalDateTime createdAt;
 
   private LocalDateTime updatedAt;

@@ -15,11 +15,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserRequest {
 
-  @Email
-  @NotNull
+  @Email(message = "Email is not valid")
+  @NotNull(message = "Email is required")
   private String email;
 
-  @NotNull
+  @NotNull(message = "Password is required")
   private String password;
 
   private UserRole role;
