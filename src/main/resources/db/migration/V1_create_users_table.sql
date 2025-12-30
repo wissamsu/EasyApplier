@@ -3,7 +3,7 @@
 CREATE TABLE linkedin (
   id BIGSERIAL PRIMARY KEY,
   liat_cookie VARCHAR(512),
-  email VARCHAR(255),
+  email VARCHAR(255) UNIQUE,
   password VARCHAR(255)
 );
 

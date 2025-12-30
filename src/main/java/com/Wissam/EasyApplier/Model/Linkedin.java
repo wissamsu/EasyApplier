@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Model;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +30,7 @@ public class Linkedin {
 
   private String liatCookie;
 
+  @Column(unique = true)
   private String email;
 
   private String password;

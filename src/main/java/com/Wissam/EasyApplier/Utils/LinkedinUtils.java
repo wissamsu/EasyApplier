@@ -1,4 +1,4 @@
-package com.Wissam.EasyApplier.LinkedinAuto;
+package com.Wissam.EasyApplier.Utils;
 
 import java.util.List;
 import java.util.Optional;
