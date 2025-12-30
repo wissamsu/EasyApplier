@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: POSTGRES
+      POSTGRES_DB: easyapplier
+    volumes:
+      - "./init.sql:/docker-entrypoint-initdb.d/init.sql"

@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LiAtCookieInvalidException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 
 @RestControllerAdvice
@@ -15,6 +16,11 @@ public class AdviceExceptions {
 
   @ExceptionHandler(UserNotFoundException.class)
   public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
+    return ResponseEntity.status(404).body(e.getMessage());
+  }
+
+  @ExceptionHandler(LiAtCookieInvalidException.class)
+  public ResponseEntity<String> handleLiAtCookieInvalidException(LiAtCookieInvalidException e) {
     return ResponseEntity.status(404).body(e.getMessage());
   }
 

@@ -45,7 +45,6 @@ public class AuthController {
   public boolean login(@RequestBody UserRequest userRequest, HttpServletResponse response) {
     String email = userRequest.getEmail();
     String password = userRequest.getPassword();
-    authService.login(email, password);
     String token = jwtUtils.generateToken(email);
     Cookie cookie = new Cookie("jwt", token);
     cookie.setMaxAge(3600);
@@ -53,7 +52,8 @@ public class AuthController {
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     response.addCookie(cookie);
-    return true;
+    return authService.login(email, password);
+
   }
 
   @PostMapping("/register")
