@@ -19,7 +19,7 @@ public class FlightSearchEventListener {
   private final FlightsInfoGatherer gatherer;
   private final SimpMessagingTemplate messagingTemplate;
 
-  @Async("taskExecutor")
+  @Async
   @EventListener
   public void onFlightSearchEvent(FlightSearchEvent event) {
     try {

@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class PlaywrightConfig {
+public class VirtualConfig {
 
-  @Bean(name = "taskExecutor")
+  @Bean
   Executor taskExecutor() {
     return Executors.newVirtualThreadPerTaskExecutor();
   }

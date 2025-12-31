@@ -1,5 +1,7 @@
 package com.Wissam.EasyApplier.Mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
@@ -17,5 +19,7 @@ public interface UserMapper {
   UserRequest toUserRequest(User user);
 
   User toUser(UserRequest userRequest);
+
+  List<UserResponse> toUserResponseList(List<User> users);
 
 }
