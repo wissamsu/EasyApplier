@@ -17,6 +17,7 @@ import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Services.IServices.IAuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "Auth")
 public class AuthController {
 
   private final IAuthService authService;

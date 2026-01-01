@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.Wissam.EasyApplier.Events.Flight.FlightSearchEvent;
 import com.Wissam.EasyApplier.Extractions.Jsoup.Models.FlightInfo;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/flight")
 @RequiredArgsConstructor
+@Tag(name = "Flight", description = "Flight controller")
 public class FlightController {
 
   private final ApplicationEventPublisher publisher;

@@ -2,6 +2,8 @@ package com.Wissam.EasyApplier.Model;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -36,6 +38,7 @@ public class Linkedin {
   private String password;
 
   @OneToOne(mappedBy = "linkedin")
+  @JsonIgnore
   private User user;
 
 }

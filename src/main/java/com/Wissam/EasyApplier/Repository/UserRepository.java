@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByUuid(String uuid);
 
-  List<User> findAllByUserRole(UserRole role);
+  List<User> findAllByRole(UserRole role);
 
   Optional<User> findUserByLinkedin_Id(Long id);
 

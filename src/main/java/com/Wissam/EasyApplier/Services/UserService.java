@@ -41,7 +41,7 @@ public class UserService implements IUserService {
 
   @Override
   public List<UserResponse> getAllUsersByRole(UserRole role) {
-    return userMapper.toUserResponseList(userRepo.findAllByUserRole(role));
+    return userMapper.toUserResponseList(userRepo.findAllByRole(role));
   }
 
   @Override

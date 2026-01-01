@@ -8,7 +8,6 @@ import org.jsoup.Jsoup;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LiAtCookieInvalidException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
@@ -31,35 +30,45 @@ public class LinkedinUtils {
   public String checkOrgetLiAtCookie(UserDetails userDetails) {
     User user = userRepo.findByEmail(userDetails.getUsername())
         .orElseThrow(() -> new UserNotFoundException("User with email " + userDetails.getUsername() + " not found"));
+    System.out.println("LiAt cookie is: " + user.getLinkedin().getLiatCookie());
     if (user.getLinkedin() == null) {
       throw new UserNotFoundException("LinkedIn profile not completed for " + userDetails.getUsername());
     }
 
-    if (user.getLinkedin().getEmail().isBlank() || user.getLinkedin().getEmail() == null
-        || user.getLinkedin().getPassword().isBlank() || user.getLinkedin().getPassword() == null) {
+    if (user.getLinkedin().getEmail() == null || user.getLinkedin().getEmail().isBlank()
+        || user.getLinkedin().getPassword() == null || user.getLinkedin().getPassword().isBlank()) {
       throw new UserNotFoundException("Your Linkedin Profile is missing email field");
     }
-    if (user.getLinkedin().getLiatCookie().length() < 15) {
-      throw new LiAtCookieInvalidException("Your Linkedin Profile's LIAT cookie is invalid");
-    }
+    // if (user.getLinkedin().getLiatCookie().length() < 15 &&
+    // !user.getLinkedin().getLiatCookie().isEmpty()
+    // && user.getLinkedin().getLiatCookie() != null) {
+    // throw new LiAtCookieInvalidException("Your Linkedin Profile's LIAT cookie is
+    // invalid");
+    // }
+    // if (user.getLinkedin().getLiatCookie() != null) {
+    // System.out.println("LIAT cookie is valid");
+    // return user.getLinkedin().getLiatCookie();
+    // }
 
     if (isLiAtValid(user.getLinkedin().getLiatCookie())) {
+      System.out.println("LIAT cookie is valid");
       return user.getLinkedin().getLiatCookie();
 
     }
-    Proxy proxy = new Proxy("http://142.111.48.253:7030")
+    Proxy proxy = new Proxy("23.95.150.145:6114")
         .setUsername("jztdgogd")
         .setPassword("94vn6lv3dieu");
     try (Playwright playwright = Playwright.create();
         Browser browser = playwright.chromium()
             .launch(
-                new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setChannel("chrome").setProxy(proxy));
+                new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setProxy(proxy));
         BrowserContext ctx = browser.newContext();) {
       Page page = ctx.newPage();
       page.navigate("https://www.linkedin.com/login");
       page.locator("#username").fill(user.getLinkedin().getEmail());
       page.locator("#password").fill(user.getLinkedin().getPassword());
       page.locator("button[type=submit]").click();
+      page.waitForTimeout(50000);
       List<Cookie> cookies = ctx.cookies("https://www.linkedin.com/");
       Optional<Cookie> liAtCookie = cookies.stream()
           .filter(c -> c.name.equals("li_at"))
@@ -78,20 +87,35 @@ public class LinkedinUtils {
   }
 
   private boolean isLiAtValid(String liAt) {
+    if (liAt == null || liAt.isBlank()) {
+      System.out.println("li_at cookie is missing");
+      return false;
+    }
     try {
-      Response response = Jsoup.connect("https://www.linkedin.com/voyager/api/me")
-          .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-              "(KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36")
-          .header("Accept", "application/json, text/plain, */*")
-          .header("Referer", "https://www.linkedin.com/")
-          .header("Accept-Language", "en-US,en;q=0.9")
+      Response response = Jsoup.connect("https://www.linkedin.com/feed/")
+          .userAgent("Mozilla/5.0")
           .cookie("li_at", liAt)
-          .ignoreContentType(true)
+          .followRedirects(true)
           .method(org.jsoup.Connection.Method.GET)
           .execute();
 
-      int status = response.statusCode();
-      return status == 200;
+      // If LinkedIn redirects you to login, cookie is invalid
+      String finalUrl = response.url().toString();
+      if (finalUrl.contains("/login")) {
+        System.out.println("Redirected to login");
+        return false;
+      }
+
+      // Extra safety: check page content
+      String body = response.body();
+      if (body.contains("Sign in") || body.contains("session_redirect")) {
+        System.out.println("Found sign in or session redirect");
+        return false;
+      }
+
+      System.out.println("LIAT cookie is valid");
+      return response.statusCode() == 200;
+
     } catch (Exception e) {
       return false;
     }
