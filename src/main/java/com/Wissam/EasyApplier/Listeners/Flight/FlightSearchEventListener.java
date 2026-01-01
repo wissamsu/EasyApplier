@@ -1,4 +1,4 @@
-package com.Wissam.EasyApplier.Extractions.Jsoup.EventListeners;
+package com.Wissam.EasyApplier.Listeners.Flight;
 
 import java.util.List;
 
