@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Wissam.EasyApplier.Automations.Linkedin.LinkedinAuto;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinRequest;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
 import com.Wissam.EasyApplier.Model.User;
@@ -28,6 +29,7 @@ public class LinkedinController {
 
   private final ILinkedinService linkedinService;
   private final LinkedinUtils linkedinUtils;
+  private final LinkedinAuto linkedin;
 
   @GetMapping("/{id}")
   @Operation(summary = "Get Linkedin by id")
@@ -58,4 +60,8 @@ public class LinkedinController {
     return linkedinService.addLi_AtCookie(user, liAtCookie);
   }
 
+  @GetMapping("/autoConnect")
+  public void autoConnect(@AuthenticationPrincipal User user) {
+    linkedin.autoConnect(user);
+  }
 }

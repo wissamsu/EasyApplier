@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
+import com.Wissam.EasyApplier.Sessions.LinkedinSession;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
@@ -20,9 +21,11 @@ import com.microsoft.playwright.options.Cookie;
 import com.microsoft.playwright.options.Proxy;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class LinkedinUtils {
 
   private final UserRepository userRepo;
@@ -117,8 +120,15 @@ public class LinkedinUtils {
       return response.statusCode() == 200;
 
     } catch (Exception e) {
+      log.error("Error while checking LIAT cookie: ", e.getMessage());
       return false;
     }
+  }
+
+  public void sessionCloser(LinkedinSession session) {
+    session.context().close();
+    session.browser().close();
+    session.playwright().close();
   }
 
 }
