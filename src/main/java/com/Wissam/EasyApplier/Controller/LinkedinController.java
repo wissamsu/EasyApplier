@@ -51,8 +51,8 @@ public class LinkedinController {
 
   @GetMapping("/cookie")
   @Operation(summary = "Check or get Linkedin Li_at cookie")
-  public ResponseEntity<String> checkOrgetLiAtCookie(@AuthenticationPrincipal UserDetails userDetails) {
-    return ResponseEntity.ok(linkedinUtils.checkOrgetLiAtCookie(userDetails));
+  public ResponseEntity<Void> checkOrgetLiAtCookie(@AuthenticationPrincipal UserDetails userDetails) {
+    return ResponseEntity.ok(null);
   }
 
   @PutMapping("/cookie/{liAtCookie}")

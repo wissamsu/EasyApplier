@@ -15,7 +15,7 @@ public class RegistrationListener {
 
   private final JavaMailServiceImpl javaMailSender;
 
-  @Async
+  @Async("taskExecutor")
   @EventListener
   public void onRegistrationEvent(EmailVerificationEvent event) {
     javaMailSender.sendConfirmSignUpEmail(event.email(), "http://localhost:8080/auth/verify/" + event.uuid());

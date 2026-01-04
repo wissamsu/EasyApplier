@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class VirtualConfig {
 
-  @Bean
+  @Bean("taskExecutor")
   Executor taskExecutor() {
     return Executors.newVirtualThreadPerTaskExecutor();
   }

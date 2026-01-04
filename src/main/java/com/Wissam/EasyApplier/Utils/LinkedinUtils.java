@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinUtils {
 
   private final UserRepository userRepo;
+  private final Playwright playwright;
 
   public String checkOrgetLiAtCookie(UserDetails userDetails) {
     User user = userRepo.findByEmail(userDetails.getUsername())
@@ -42,26 +43,15 @@ public class LinkedinUtils {
         || user.getLinkedin().getPassword() == null || user.getLinkedin().getPassword().isBlank()) {
       throw new UserNotFoundException("Your Linkedin Profile is missing email field");
     }
-    // if (user.getLinkedin().getLiatCookie().length() < 15 &&
-    // !user.getLinkedin().getLiatCookie().isEmpty()
-    // && user.getLinkedin().getLiatCookie() != null) {
-    // throw new LiAtCookieInvalidException("Your Linkedin Profile's LIAT cookie is
-    // invalid");
-    // }
-    // if (user.getLinkedin().getLiatCookie() != null) {
-    // System.out.println("LIAT cookie is valid");
-    // return user.getLinkedin().getLiatCookie();
-    // }
 
     if (isLiAtValid(user.getLinkedin().getLiatCookie())) {
       System.out.println("LIAT cookie is valid");
       return user.getLinkedin().getLiatCookie();
-
     }
     Proxy proxy = new Proxy("23.95.150.145:6114")
         .setUsername("jztdgogd")
         .setPassword("94vn6lv3dieu");
-    try (Playwright playwright = Playwright.create();
+    try (
         Browser browser = playwright.chromium()
             .launch(
                 new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setProxy(proxy));
@@ -80,10 +70,11 @@ public class LinkedinUtils {
       if (liAtCookie.isPresent()) {
         user.getLinkedin().setLiatCookie(liAtCookie.get().value);
         userRepo.save(user);
-        return liAtCookie.get().value;
       } else {
         throw new RuntimeException("li_at cookie not found after login");
       }
+
+      return liAtCookie.get().value;
     } catch (Exception e) {
       throw new RuntimeException("Something went wrong in checkOrGetLiAtCookie error is: ", e);
     }
@@ -102,14 +93,12 @@ public class LinkedinUtils {
           .method(org.jsoup.Connection.Method.GET)
           .execute();
 
-      // If LinkedIn redirects you to login, cookie is invalid
       String finalUrl = response.url().toString();
       if (finalUrl.contains("/login")) {
         System.out.println("Redirected to login");
         return false;
       }
 
-      // Extra safety: check page content
       String body = response.body();
       if (body.contains("Sign in") || body.contains("session_redirect")) {
         System.out.println("Found sign in or session redirect");

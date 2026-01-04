@@ -1,7 +1,10 @@
 package com.Wissam.EasyApplier.Automations.Linkedin;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -30,16 +33,19 @@ public class LinkedinAuto {
 
   private final LinkedinUtils linkedinUtils;
   private final UserRepository userRepo;
+  private final Playwright playwright;
+  private final LinkedinScripts linkedinScripts;
+
+  Proxy proxy = new Proxy("http://142.111.48.253:7030")
+      .setUsername("jztdgogd")
+      .setPassword("94vn6lv3dieu");
 
   public LinkedinSession login(UserDetails userDetails) {
     try {
       User user = userRepo.findByEmail(userDetails.getUsername())
           .orElseThrow(() -> new UserNotFoundException("User with email " + userDetails.getUsername() + " not found"));
       linkedinUtils.checkOrgetLiAtCookie(userDetails);
-      Proxy proxy = new Proxy("http://142.111.48.253:7030")
-          .setUsername("jztdgogd")
-          .setPassword("94vn6lv3dieu");
-      Playwright playwright = Playwright.create();
+
       Browser browser = playwright.chromium()
           .launch(
               new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setProxy(proxy));
@@ -56,11 +62,12 @@ public class LinkedinAuto {
       page.waitForTimeout(5000);
       return new LinkedinSession(playwright, browser, ctx, page);
     } catch (Exception e) {
-      log.error("Error while logging in method login in class LinkedinAuto: ", e.getMessage());
+      log.error("Error while logging in method login in class LinkedinAuto: " + e.getMessage());
       return null;
     }
   }
 
+  @Async("taskExecutor")
   public void autoConnect(User user) {
     LinkedinSession session = login(user);
     Page page = session.page();
@@ -91,6 +98,33 @@ public class LinkedinAuto {
       }
     }
     linkedinUtils.sessionCloser(session);
+  }
+
+  public void getJobsList(String jobTitle, User user) throws IOException {
+    Browser browser = playwright.chromium()
+        .launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setProxy(proxy));
+    BrowserContext context = browser.newContext();
+    Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
+    cookie.setUrl("https://www.linkedin.com");
+    cookie.setSecure(true);
+    cookie.setHttpOnly(true);
+    context.addCookies(List.of(cookie));
+    Page page = context.newPage();
+    page.navigate("https://www.linkedin.com/jobs/search/?keywords=" + URLEncoder.encode(jobTitle, "UTF-8") + "&f_EA=1");
+
+    Locator jobCards = page.locator("li[data-occludable-job-id]");
+    log.info("Found " + jobCards.count() + " jobs");
+
+    for (int i = 0; i < jobCards.count(); i++) {
+      Locator jobCard = jobCards.nth(i);
+      jobCard.click();
+      linkedinScripts.EasyApplyScript(page);
+      page.waitForTimeout(100);
+    }
+
+    page.waitForTimeout(5000);
+    page.close();
+    browser.close();
   }
 
 }
