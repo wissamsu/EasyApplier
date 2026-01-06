@@ -14,11 +14,8 @@ import com.Wissam.EasyApplier.Extractions.Jsoup.Models.FlightInfo;
 import com.Wissam.EasyApplier.Extractions.Jsoup.Models.FlightsFound;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.options.Proxy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,17 +23,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FlightsInfoGatherer implements IFlightsInfo {
 
+  private final Browser browser;
+
   @Override
   public List<FlightsFound> findFlights(FlightInfo flightInfo) {
-    Proxy proxy = new Proxy("http://142.111.48.253:7030")
-        .setUsername("jztdgogd")
-        .setPassword("94vn6lv3dieu");
-    try (Playwright playwright = Playwright.create();
-        Browser browser = playwright.chromium()
-            .launch(new BrowserType.LaunchOptions()
-                .setHeadless(false)
-                .setSlowMo(50)
-                .setChannel("chrome").setProxy(proxy));
+    try (
         BrowserContext ctx = browser.newContext();) {
 
       Page page = ctx.newPage();

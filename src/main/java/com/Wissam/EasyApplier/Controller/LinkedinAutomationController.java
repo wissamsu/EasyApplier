@@ -1,7 +1,6 @@
 package com.Wissam.EasyApplier.Controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,18 +20,9 @@ public class LinkedinAutomationController {
 
   private final LinkedinAuto linkedinAuto;
 
-  @GetMapping("/login")
-  public void login(@AuthenticationPrincipal UserDetails userDetails) {
-    linkedinAuto.login(userDetails);
-  }
-
-  @GetMapping("/getJobList/{jobTitle}")
-  public void getJobsList(@PathVariable String jobTitle, @AuthenticationPrincipal User user) {
-    try {
-      linkedinAuto.getJobsList(jobTitle, user);
-    } catch (Exception e) {
-      System.out.println("Error in method getJobsList: " + e.getMessage());
-    }
+  @GetMapping("/jobAutomatorById/{jobId}")
+  public void jobAutomatorById(@PathVariable String jobId, @AuthenticationPrincipal User user) {
+    linkedinAuto.jobAutomatorById(jobId, user);
   }
 
 }

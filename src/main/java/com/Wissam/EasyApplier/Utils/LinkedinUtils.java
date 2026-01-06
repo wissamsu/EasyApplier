@@ -14,11 +14,8 @@ import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Sessions.LinkedinSession;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
-import com.microsoft.playwright.options.Proxy;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinUtils {
 
   private final UserRepository userRepo;
-  private final Playwright playwright;
+  private final Browser browser;
 
   public String checkOrgetLiAtCookie(UserDetails userDetails) {
     User user = userRepo.findByEmail(userDetails.getUsername())
@@ -48,20 +45,17 @@ public class LinkedinUtils {
       System.out.println("LIAT cookie is valid");
       return user.getLinkedin().getLiatCookie();
     }
-    Proxy proxy = new Proxy("23.95.150.145:6114")
-        .setUsername("jztdgogd")
-        .setPassword("94vn6lv3dieu");
+    // Proxy proxy = new Proxy("23.95.150.145:6114")
+    // .setUsername("jztdgogd")
+    // .setPassword("94vn6lv3dieu");
     try (
-        Browser browser = playwright.chromium()
-            .launch(
-                new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50).setProxy(proxy));
         BrowserContext ctx = browser.newContext();) {
       Page page = ctx.newPage();
       page.navigate("https://www.linkedin.com/login");
       page.locator("#username").fill(user.getLinkedin().getEmail());
       page.locator("#password").fill(user.getLinkedin().getPassword());
       page.locator("button[type=submit]").click();
-      page.waitForTimeout(50000);
+      page.waitForTimeout(5000);
       List<Cookie> cookies = ctx.cookies("https://www.linkedin.com/");
       Optional<Cookie> liAtCookie = cookies.stream()
           .filter(c -> c.name.equals("li_at"))
@@ -117,7 +111,6 @@ public class LinkedinUtils {
   public void sessionCloser(LinkedinSession session) {
     session.context().close();
     session.browser().close();
-    session.playwright().close();
   }
 
 }

@@ -3,6 +3,8 @@ package com.Wissam.EasyApplier.Controller;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,6 +46,17 @@ public class AuthController {
     return "hello";
   }
 
+  @GetMapping("/auth-status")
+  public boolean checkAuthentication() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || !auth.isAuthenticated()
+        || auth.getPrincipal().equals("anonymousUser")) {
+      return false;
+    }
+    return true;
+  }
+
   @PostMapping("/login")
   public boolean login(@RequestBody UserRequest userRequest, HttpServletResponse response) {
     String email = userRequest.getEmail();
@@ -51,7 +64,7 @@ public class AuthController {
     String token = jwtUtils.generateToken(email);
     Cookie cookie = new Cookie("jwt", token);
     cookie.setMaxAge(3600);
-    cookie.setSecure(true);
+    cookie.setSecure(false);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     response.addCookie(cookie);

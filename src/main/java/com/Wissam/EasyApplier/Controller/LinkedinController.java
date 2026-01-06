@@ -60,8 +60,4 @@ public class LinkedinController {
     return linkedinService.addLi_AtCookie(user, liAtCookie);
   }
 
-  @GetMapping("/autoConnect")
-  public void autoConnect(@AuthenticationPrincipal User user) {
-    linkedin.autoConnect(user);
-  }
 }

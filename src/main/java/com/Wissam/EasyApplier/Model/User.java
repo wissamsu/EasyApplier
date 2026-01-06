@@ -3,7 +3,9 @@ package com.Wissam.EasyApplier.Model;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,6 +21,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -62,6 +65,12 @@ public class User implements UserDetails {
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
   @JoinColumn(name = "linkedin_id", nullable = true)
   private Linkedin linkedin;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private JobAnswers jobAnswers;
+
+  @UuidGenerator
+  private UUID sessionUuid;
 
   @CreatedDate
   private LocalDateTime createdAt;
