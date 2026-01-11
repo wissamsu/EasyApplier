@@ -1,7 +1,12 @@
 package com.Wissam.EasyApplier.Utils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -11,10 +16,12 @@ import org.springframework.stereotype.Component;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
-import com.Wissam.EasyApplier.Sessions.LinkedinSession;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Browser.NewContextOptions;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinUtils {
 
   private final UserRepository userRepo;
-  private final Browser browser;
 
   public String checkOrgetLiAtCookie(UserDetails userDetails) {
     User user = userRepo.findByEmail(userDetails.getUsername())
@@ -49,6 +55,9 @@ public class LinkedinUtils {
     // .setUsername("jztdgogd")
     // .setPassword("94vn6lv3dieu");
     try (
+        Playwright playwright = Playwright.create();
+        Browser browser = playwright.chromium()
+            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
         BrowserContext ctx = browser.newContext();) {
       Page page = ctx.newPage();
       page.navigate("https://www.linkedin.com/login");
@@ -108,9 +117,26 @@ public class LinkedinUtils {
     }
   }
 
-  public void sessionCloser(LinkedinSession session) {
-    session.context().close();
-    session.browser().close();
+  public Path getContextPath(UUID userId) {
+    Path dir = Paths.get("contexts");
+    try {
+      Files.createDirectories(dir);
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot create contexts folder", e);
+    }
+    return dir.resolve("user-" + userId + "-linkedin.json");
+  }
+
+  public BrowserContext createOrLoadContext(Path statePath, Browser browser) {
+    NewContextOptions options = new NewContextOptions();
+    if (Files.exists(statePath)) {
+      options.setStorageStatePath(statePath);
+    }
+    return browser.newContext(options);
+  }
+
+  public void saveContext(BrowserContext ctx, Path statePath) {
+    ctx.storageState(new BrowserContext.StorageStateOptions().setPath(statePath));
   }
 
 }

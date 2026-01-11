@@ -14,8 +14,10 @@ import com.Wissam.EasyApplier.Extractions.Jsoup.Models.FlightInfo;
 import com.Wissam.EasyApplier.Extractions.Jsoup.Models.FlightsFound;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,11 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FlightsInfoGatherer implements IFlightsInfo {
 
-  private final Browser browser;
-
   @Override
   public List<FlightsFound> findFlights(FlightInfo flightInfo) {
     try (
+        Playwright playwright = Playwright.create();
+        Browser browser = playwright.chromium()
+            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
         BrowserContext ctx = browser.newContext();) {
 
       Page page = ctx.newPage();

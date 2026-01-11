@@ -1,4 +1,7 @@
-package com.Wissam.EasyApplier.Playwright.Config;
+package com.Wissam.EasyApplier.Automations.Configs;
+
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +11,7 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;
 
 @Configuration
-public class PlaywrightConfig {
+public class AutomationConfigs {
 
   @Bean(destroyMethod = "close")
   Playwright playwright() {
@@ -16,10 +19,14 @@ public class PlaywrightConfig {
   }
 
   @Bean(destroyMethod = "close")
-  Browser browser(Playwright playwright) {
+  Browser browser() {
     return playwright().chromium()
-        .launch(
-            new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
+        .launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
+  }
+
+  @Bean
+  ConcurrentHashMap<UUID, Object> userLocks() {
+    return new ConcurrentHashMap<>();
   }
 
 }

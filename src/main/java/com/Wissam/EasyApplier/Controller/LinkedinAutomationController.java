@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Wissam.EasyApplier.Automations.Linkedin.LinkedinAuto;
+import com.Wissam.EasyApplier.Automations.Job.Linkedin.LinkedinAuto;
 import com.Wissam.EasyApplier.Model.User;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +23,11 @@ public class LinkedinAutomationController {
   @GetMapping("/jobAutomatorById/{jobId}")
   public void jobAutomatorById(@PathVariable String jobId, @AuthenticationPrincipal User user) {
     linkedinAuto.jobAutomatorById(jobId, user);
+  }
+
+  @GetMapping("/jobAutomator")
+  public void jobAutomator(@AuthenticationPrincipal User user) {
+    linkedinAuto.jobAutomator(user);
   }
 
 }

@@ -5,21 +5,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Wissam.EasyApplier.Extractions.Jsoup.Jobs.LinkedinEasyJobsExtractor;
+import com.Wissam.EasyApplier.Extractions.Jsoup.Jobs.GeneralJobExtractions;
 import com.Wissam.EasyApplier.Model.User;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/temp")
 @RequiredArgsConstructor
-public class ExtractorController {
+@RequestMapping("/general")
+@Tag(name = "General", description = "General Automations")
+public class GeneralAutomationsController {
 
-  private final LinkedinEasyJobsExtractor extractor;
+  private final GeneralJobExtractions jobsExtractor;
 
   @GetMapping("/extractJobs/{jobTitle}")
   public void extractJobs(String jobTitle, @AuthenticationPrincipal User user) {
-    extractor.jobsExtractor(jobTitle, user);
+    jobsExtractor.jobsExtractor(jobTitle, user);
   }
 
 }

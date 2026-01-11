@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Wissam.EasyApplier.Automations.Linkedin.LinkedinAuto;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinRequest;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Services.IServices.ILinkedinService;
-import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +26,6 @@ import lombok.RequiredArgsConstructor;
 public class LinkedinController {
 
   private final ILinkedinService linkedinService;
-  private final LinkedinUtils linkedinUtils;
-  private final LinkedinAuto linkedin;
 
   @GetMapping("/{id}")
   @Operation(summary = "Get Linkedin by id")
