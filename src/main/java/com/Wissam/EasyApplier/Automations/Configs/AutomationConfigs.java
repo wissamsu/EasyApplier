@@ -1,8 +1,5 @@
 package com.Wissam.EasyApplier.Automations.Configs;
 
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,11 +19,6 @@ public class AutomationConfigs {
   Browser browser() {
     return playwright().chromium()
         .launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
-  }
-
-  @Bean
-  ConcurrentHashMap<UUID, Object> userLocks() {
-    return new ConcurrentHashMap<>();
   }
 
 }

@@ -8,8 +8,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.HandshakeNotFoundException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LiAtCookieInvalidException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LinkedinNotFoundException;
+import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.QuestionOrIdNotFoundException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 
 @RestControllerAdvice
@@ -17,6 +19,16 @@ public class AdviceExceptions {
 
   @ExceptionHandler(LinkedinNotFoundException.class)
   public ResponseEntity<String> handleLinkedinNotFoundException(LinkedinNotFoundException e) {
+    return ResponseEntity.status(404).body(e.getMessage());
+  }
+
+  @ExceptionHandler(QuestionOrIdNotFoundException.class)
+  public ResponseEntity<String> QuestionOrIdNotFoundException(QuestionOrIdNotFoundException e) {
+    return ResponseEntity.status(404).body(e.getMessage());
+  }
+
+  @ExceptionHandler(HandshakeNotFoundException.class)
+  public ResponseEntity<String> handleHandshakeNotFoundException(HandshakeNotFoundException e) {
     return ResponseEntity.status(404).body(e.getMessage());
   }
 

@@ -26,6 +26,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -56,6 +57,10 @@ public class User implements UserDetails {
 
   private String uuid;
 
+  private String resumeLink;
+
+  private String PhoneNumber;
+
   private boolean verified;
 
   @Enumerated(EnumType.STRING)
@@ -66,8 +71,12 @@ public class User implements UserDetails {
   @JoinColumn(name = "linkedin_id", nullable = true)
   private Linkedin linkedin;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private JobAnswers jobAnswers;
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
+  @JoinColumn(name = "handshake_id", nullable = true)
+  private Handshake handshake;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private List<JobAnswer> jobAnswers;
 
   @UuidGenerator
   private UUID sessionUuid;

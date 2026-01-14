@@ -4,13 +4,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.Wissam.EasyApplier.Dto.User.UserResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Mapper.UserMapper;
+import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Services.IServices.IUserService;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +25,7 @@ public class UserService implements IUserService {
 
   private final UserRepository userRepo;
   private final UserMapper userMapper;
+  private final Cloudinary cloudinary;
 
   @Override
   public UserResponse findUserByEmail(String email) {
@@ -56,6 +61,27 @@ public class UserService implements IUserService {
     return userMapper.toUserResponse(
         userRepo.findUserByLinkedin_Email(linkedinEmail)
             .orElseThrow(() -> new UserNotFoundException("User with linkedinEmail " + linkedinEmail + " not found")));
+  }
+
+  @Override
+  @Transactional
+  public String uploadResume(User user, MultipartFile file) {
+    try {
+      var uploadResult = cloudinary.uploader().upload(
+          file.getBytes(),
+          ObjectUtils.asMap(
+              "resource_type", "image",
+              "folder", "resumes"));
+
+      String resumeUrl = uploadResult.get("secure_url").toString();
+      user.setResumeLink(resumeUrl);
+      userRepo.save(user);
+
+      return resumeUrl;
+
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to upload resume to Cloudinary", e);
+    }
   }
 
 }

@@ -50,6 +50,8 @@ public class LinkedinService implements ILinkedinService {
     return linkedinMapper.toLinkedinResponse(linkedin);
   }
 
+  @Override
+  @Transactional
   public LinkedinResponse addLi_AtCookie(User user, String liAtCookie) {
     Linkedin linkedin = user.getLinkedin();
     linkedin.setLiatCookie(liAtCookie);

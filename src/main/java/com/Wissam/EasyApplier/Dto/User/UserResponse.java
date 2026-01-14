@@ -30,7 +30,6 @@ public class UserResponse {
 
   private UserRole role;
 
-  @NotNull(message = "Created at is required")
   private LocalDateTime createdAt;
 
   private LocalDateTime updatedAt;

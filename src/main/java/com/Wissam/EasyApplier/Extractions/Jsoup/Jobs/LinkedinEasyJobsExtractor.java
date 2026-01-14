@@ -12,12 +12,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.Wissam.EasyApplier.Model.User;
-import com.Wissam.EasyApplier.ObjectReturns.job.EasyJobInfo;
+import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 import com.microsoft.playwright.options.LoadState;
 
@@ -29,14 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class LinkedinEasyJobsExtractor {
 
+  private final Browser browser;
+
   @Async
   public void jobsExtractor(String jobTitle, User user) {
-    try (
-
-        // first 25 jobs
-        Playwright playwright = Playwright.create();
-        Browser browser = playwright.chromium()
-            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
+    try (// first 25 jobs
         BrowserContext context = browser.newContext();) {
       Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");
@@ -56,7 +51,7 @@ public class LinkedinEasyJobsExtractor {
 
       int i = 1;
 
-      List<EasyJobInfo> jobInfos = new ArrayList<>();
+      List<LinkedinEasyJobInfo> jobInfos = new ArrayList<>();
       for (Element jobCard : jobCards) {
 
         boolean isApplied = jobCard
@@ -72,7 +67,7 @@ public class LinkedinEasyJobsExtractor {
 
         log.info("--------------------------------------------------------------------------");
         log.info("Extracting job {} jobId={}", i++, jobId);
-        EasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
+        LinkedinEasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
         jobInfos.add(jobInfo);
 
       }
@@ -102,7 +97,7 @@ public class LinkedinEasyJobsExtractor {
 
         log.info("--------------------------------------------------------------------------");
         log.info("Extracting job {} jobId={}", i++, jobId);
-        EasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
+        LinkedinEasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
 
         jobInfos.add(jobInfo);
 
@@ -119,7 +114,7 @@ public class LinkedinEasyJobsExtractor {
     }
   }
 
-  public EasyJobInfo jobInfoExtractor(String jobId, BrowserContext context, User user) {
+  public LinkedinEasyJobInfo jobInfoExtractor(String jobId, BrowserContext context, User user) {
     try {
       Page page = context.newPage();
       String jobLink = "https://www.linkedin.com/jobs/view/" + jobId;
@@ -162,7 +157,7 @@ public class LinkedinEasyJobsExtractor {
 
       log.info("--------------------------------------------------------------------------");
       page.close();
-      return new EasyJobInfo(jobId, jobTitle, imgLink, jobLink, actualJobLocation, companyName, user);
+      return new LinkedinEasyJobInfo(jobId, jobTitle, imgLink, jobLink, actualJobLocation, companyName, user);
     } catch (Exception e) {
       log.error("Error while extracting job info method jobInfoExtractor in class LinkedinJobsExtractor: "
           + e.getMessage());

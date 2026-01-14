@@ -7,14 +7,12 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.Wissam.EasyApplier.Model.User;
-import com.Wissam.EasyApplier.ObjectReturns.job.EasyJobInfo;
+import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
@@ -28,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinAuto {
 
   private final LinkedinUtils linkedinUtils;
+  private final Browser browser;
 
   List<String> jobIds = List.of(
       "4342675398",
@@ -57,9 +56,6 @@ public class LinkedinAuto {
   public void jobAutomatorById(String jobId, User user) {
     linkedinUtils.checkOrgetLiAtCookie(user);
     try (
-        Playwright playwright = Playwright.create();
-        Browser browser = playwright.chromium()
-            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
         BrowserContext context = browser.newContext();) {
       Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");
@@ -110,9 +106,6 @@ public class LinkedinAuto {
 
   public void autoConnect(User user) {
     try (
-        Playwright playwright = Playwright.create();
-        Browser browser = playwright.chromium()
-            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
         BrowserContext context = browser.newContext();) {
       Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");
@@ -128,12 +121,9 @@ public class LinkedinAuto {
 
   @EventListener
   @Async
-  public void jobAutomatorByIdWithEvent(EasyJobInfo jobInfo) {
+  public void jobAutomatorByIdWithEvent(LinkedinEasyJobInfo jobInfo) {
     linkedinUtils.checkOrgetLiAtCookie(jobInfo.user());
     try (
-        Playwright playwright = Playwright.create();
-        Browser browser = playwright.chromium()
-            .launch(new BrowserType.LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
         BrowserContext context = browser.newContext();) {
       Cookie cookie = new Cookie("li_at", jobInfo.user().getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");
