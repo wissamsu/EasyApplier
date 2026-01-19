@@ -39,10 +39,11 @@ public class LinkedinController {
     return ResponseEntity.ok(linkedinService.getLinkedinByEmail(email));
   }
 
-  @PostMapping("/user/{userId}")
-  @Operation(summary = "Create Linkedin by user id")
-  public ResponseEntity<LinkedinResponse> createLinkedinByUserId(LinkedinRequest linkedinRequest, Long userId) {
-    return ResponseEntity.ok(linkedinService.createLinkedinByUserId(linkedinRequest, userId));
+  @PostMapping("/user/")
+  @Operation(summary = "Create Linkedin")
+  public ResponseEntity<LinkedinResponse> createLinkedinByUserId(LinkedinRequest linkedinRequest,
+      @AuthenticationPrincipal User user) {
+    return ResponseEntity.ok(linkedinService.createLinkedin(linkedinRequest, user));
   }
 
   @GetMapping("/cookie")

@@ -24,11 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class HandshakeUtils {
 
-  private final Browser browser;
-
-  public void oktaLogin(User user) {
-    Path path = getContextPath(UUID.fromString(user.getUuid()));
-    try (BrowserContext context = createOrLoadContext(path, browser); Page page = context.newPage();) {
+  public boolean oktaLogin(User user, BrowserContext context, Page page) {
+    Path path = getContextPath(user.getUuid());
+    try {
       page.navigate("https://app.joinhandshake.com/login?requested_authentication_method=standard");
       page.waitForLoadState(LoadState.DOMCONTENTLOADED);
       page.getByPlaceholder("Enter email").fill(user.getHandshake().getEmail());
@@ -44,9 +42,14 @@ public class HandshakeUtils {
       page.locator("input[data-type='save']").click();
       page.locator("a[data-se='button']").nth(1).click();
       page.waitForTimeout(20000);
-      saveContext(context, path);
+      if (page.url().startsWith("https://app.joinhandshake.com/job-search")) {
+        saveContext(context, path);
+        return true;
+      }
+      return false;
     } catch (Exception e) {
       log.error("Error logging in: " + e.getMessage());
+      return false;
     }
   }
 

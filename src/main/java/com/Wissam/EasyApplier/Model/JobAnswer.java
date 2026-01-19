@@ -1,14 +1,12 @@
 package com.Wissam.EasyApplier.Model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,13 +25,26 @@ public class JobAnswer {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(nullable = false, unique = true)
-  private String question;
+  private String address;
 
-  @Lob
-  private String answer;
+  private String city;
+
+  private String state;
+
+  private String zipCode;
+
+  private String country;
+
+  private String linkedinProfileUrl;
+
+  private Short yearsOfExperience;
+
+  private Boolean eligibleToWorkInUS;
+
+  private Boolean requireVisa;
+
 }

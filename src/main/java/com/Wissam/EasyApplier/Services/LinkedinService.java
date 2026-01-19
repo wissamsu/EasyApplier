@@ -40,9 +40,7 @@ public class LinkedinService implements ILinkedinService {
 
   @Override
   @Transactional
-  public LinkedinResponse createLinkedinByUserId(LinkedinRequest linkedinRequest, Long userId) {
-    User user = userRepo.findById(userId)
-        .orElseThrow(() -> new LinkedinNotFoundException("User with id " + userId + " not found"));
+  public LinkedinResponse createLinkedin(LinkedinRequest linkedinRequest, User user) {
     Linkedin linkedin = linkedinMapper.toLinkedin(linkedinRequest);
     linkedin.setUser(user);
     user.setLinkedin(linkedin);

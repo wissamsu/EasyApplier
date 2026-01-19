@@ -1,5 +1,6 @@
 package com.Wissam.EasyApplier.Services;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +26,8 @@ public class HandshakeService implements IHandshakeService {
 
   @Override
   @Transactional(readOnly = true)
-  public HandshakeResponse getHandshakeById(Long id) {
-    return handshakeMapper.toHandshakeResponse(handshakeRepo.findById(id)
-        .orElseThrow(() -> new HandshakeNotFoundException("Handshake with id " + id + " not found")));
+  public HandshakeResponse getHandshake(@AuthenticationPrincipal User user) {
+    return handshakeMapper.toHandshakeResponse(user.getHandshake());
   }
 
   @Override
@@ -39,14 +39,19 @@ public class HandshakeService implements IHandshakeService {
 
   @Override
   @Transactional
-  public HandshakeResponse createHandshakeByUserId(HandshakeRequest handshakeRequest, Long userId) {
-    User user = userRepo.findById(userId)
-        .orElseThrow(() -> new HandshakeNotFoundException("User with id " + userId + " not found"));
+  public HandshakeResponse createHandshake(HandshakeRequest handshakeRequest, User user) {
     Handshake handshake = handshakeMapper.toHandshake(handshakeRequest);
     handshake.setUser(user);
     user.setHandshake(handshake);
     userRepo.save(user);
     return handshakeMapper.toHandshakeResponse(handshake);
+  }
+
+  @Override
+  @Transactional
+  public HandshakeResponse updateHandshake(HandshakeRequest handshakeRequest, User user) {
+    handshakeMapper.updateHandshakeFromRequest(user.getHandshake(), handshakeRequest);
+    return handshakeMapper.toHandshakeResponse(handshakeRepo.save(user.getHandshake()));
   }
 
 }

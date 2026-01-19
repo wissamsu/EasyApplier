@@ -1,9 +1,7 @@
 package com.Wissam.EasyApplier.Dto.User;
 
-import com.Wissam.EasyApplier.Enums.UserRole;
-
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,12 +14,18 @@ import lombok.NoArgsConstructor;
 public class UserRequest {
 
   @Email(message = "Email is not valid")
-  @NotNull(message = "Email is required")
+  @NotBlank(message = "Email is required")
   private String email;
 
-  @NotNull(message = "Password is required")
+  @NotBlank(message = "Password is required")
   private String password;
 
-  private UserRole role;
+  private String resumeLink;
+
+  private String firstName;
+
+  private String lastName;
+
+  private String phoneNumber;
 
 }

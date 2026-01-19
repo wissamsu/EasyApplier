@@ -27,7 +27,7 @@ public class HandshakeAuto {
 
   @Async
   public void jobsExtractor(String jobTitle, User user) {
-    UUID userId = UUID.fromString(user.getUuid());
+    UUID userId = user.getUuid();
     Object lock = locks.computeIfAbsent(userId, id -> new Object());
     synchronized (lock) {
       Path statePath = handshakeUtils.getContextPath(userId);

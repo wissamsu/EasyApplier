@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -18,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   boolean existsByEmailAndPassword(String email, String password);
 
-  Optional<User> findByUuid(String uuid);
+  Optional<User> findByUuid(UUID uuid);
 
   List<User> findAllByRole(UserRole role);
 

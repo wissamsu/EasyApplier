@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,7 +25,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -55,11 +53,15 @@ public class User implements UserDetails {
   @Column(nullable = false)
   private String password;
 
-  private String uuid;
+  private UUID uuid;
 
   private String resumeLink;
 
-  private String PhoneNumber;
+  private String firstName;
+
+  private String lastName;
+
+  private String phoneNumber;
 
   private boolean verified;
 
@@ -75,11 +77,8 @@ public class User implements UserDetails {
   @JoinColumn(name = "handshake_id", nullable = true)
   private Handshake handshake;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<JobAnswer> jobAnswers;
-
-  @UuidGenerator
-  private UUID sessionUuid;
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+  private JobAnswer jobAnswer;
 
   @CreatedDate
   private LocalDateTime createdAt;

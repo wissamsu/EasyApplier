@@ -2,10 +2,7 @@ package com.Wissam.EasyApplier.Extractions.Jsoup.Jobs;
 
 import java.net.URLEncoder;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jsoup.Jsoup;
@@ -38,18 +35,27 @@ public class HandshakeEasyJobExtractor {
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
 
   @Async
-  public CompletableFuture<List<HandshakeEasyJobInfo>> jobsExtractor(String jobTitle, User user, int pageNumber) {
-    UUID userId = UUID.fromString(user.getUuid());
+  public void jobsExtractor(String jobTitle, User user, int pageNumber) {
+    UUID userId = user.getUuid();
     Object lock = locks.computeIfAbsent(userId, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(userId);
     synchronized (lock) {
-      List<HandshakeEasyJobInfo> jobInfos = new ArrayList<>();
       // first 25 jobs
       try (BrowserContext context = handshakeUtils.createOrLoadContext(statePath, browser);
           Page page = context.newPage();) {
         page.navigate("https://app.joinhandshake.com/job-search/?query=" + URLEncoder.encode(jobTitle, "UTF-8")
-            + "&per_page=25&page=" + pageNumber);
+            + "&per_page=50&page=" + pageNumber);
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+        if (page.url().equals("https://app.joinhandshake.com/login")) {
+          handshakeUtils.oktaLogin(user, context, page);
+          String expectedStart = "https://app.joinhandshake.com/job-search";
+          page.waitForCondition(() -> page.url().startsWith(expectedStart),
+              new Page.WaitForConditionOptions().setTimeout(100000));
+          page.navigate("https://app.joinhandshake.com/job-search/?query=" + URLEncoder.encode(jobTitle, "UTF-8")
+              + "&per_page=25&page=" + pageNumber);
+          page.waitForLoadState(LoadState.DOMCONTENTLOADED);
+
+        }
         // page.waitForTimeout(5000);
         Document doc = Jsoup.parse(page.content());
         Elements jobCards = doc.select("div[data-hook^='job-result-card ']");
@@ -75,17 +81,13 @@ public class HandshakeEasyJobExtractor {
           // CompanyImageLink
           String companyImageLink = jobCard.select("img").attr("src");
           log.info("Company image link: " + companyImageLink);
-          jobInfos
-              .add(new HandshakeEasyJobInfo(jobId, jobName, companyImageLink, jobLink, jobLocation, companyName, user));
           publisher.publishEvent(
               new HandshakeEasyJobInfo(jobId, jobName, companyImageLink, jobLink, jobLocation, companyName, user));
 
         }
-        return CompletableFuture.completedFuture(jobInfos);
 
       } catch (Exception e) {
         log.error(e.getMessage());
-        return null;
       }
     }
   }

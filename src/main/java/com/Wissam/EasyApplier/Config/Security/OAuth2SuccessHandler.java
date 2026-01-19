@@ -1,7 +1,6 @@
 package com.Wissam.EasyApplier.Config.Security;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -44,7 +43,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     User user = userRepo.findByEmail(email).orElseGet(() -> {
       User newUser = User.builder()
           .email(email)
-          .uuid(UUID.randomUUID().toString())
           .verified(true)
           .role(UserRole.ROLE_USER)
           .build();

@@ -8,12 +8,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
-import com.Wissam.EasyApplier.Dto.User.UserRequest;
 import com.Wissam.EasyApplier.Events.Mail.EmailVerificationEvent;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
@@ -58,9 +57,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public boolean login(@RequestBody UserRequest userRequest, HttpServletResponse response) {
-    String email = userRequest.getEmail();
-    String password = userRequest.getPassword();
+  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
     String token = jwtUtils.generateToken(email);
     Cookie cookie = new Cookie("jwt", token);
     cookie.setMaxAge(3600);
@@ -73,16 +70,14 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public String register(@RequestBody UserRequest userRequest) {
-    String email = userRequest.getEmail();
-    String password = userRequest.getPassword();
-    String uuid = UUID.randomUUID().toString();
+  public String register(@RequestParam String email, @RequestParam String password) {
+    UUID uuid = UUID.randomUUID();
     publisher.publishEvent(new EmailVerificationEvent(email, uuid));
     return authService.register(email, password, uuid);
   }
 
   @GetMapping("/verify/{uuid}")
-  public boolean verifyEmail(@PathVariable String uuid) {
+  public boolean verifyEmail(@PathVariable UUID uuid) {
     User user = userRepo.findByUuid(uuid)
         .orElseThrow(() -> new UserNotFoundException("User with uuid " + uuid + " not found"));
 

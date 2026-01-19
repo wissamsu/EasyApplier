@@ -35,7 +35,7 @@ public class HandshakeListener {
   @EventListener
   @Async
   public void onJobFoundEvent(HandshakeEasyJobInfo jobInfo) {
-    UUID uuid = UUID.fromString(jobInfo.user().getUuid());
+    UUID uuid = jobInfo.user().getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(uuid);
     synchronized (lock) {
@@ -47,6 +47,7 @@ public class HandshakeListener {
         } else if (page.getByText("Withdraw application").count() > 0) {
         } else if (page.getByText("Your application has already been reviewed and cannot").count() > 0) {
         } else if (page.getByText("To withdraw your application,").count() > 0) {
+        } else if (page.getByText("Did you apply to this job?").count() > 0) {
         } else {
           Locator div = page.locator("div[data-hook='apply-modal-content']");
           page.locator("button[aria-label='Apply']").first().click();
@@ -81,8 +82,10 @@ public class HandshakeListener {
             div.locator("input[type='file']").setInputFiles(payload);
             page.waitForTimeout(5000);
           }
-          div.getByText("Submit application").click();
-          page.waitForTimeout(1000);
+          if (div.getByText("Submit application").count() > 0) {
+            div.getByText("Submit application").click();
+            page.waitForTimeout(1000);
+          }
 
           while (div.getByText("Submit application").isDisabled()) {
             page.waitForTimeout(1000);

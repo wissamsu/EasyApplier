@@ -1,4 +1,6 @@
 package com.Wissam.EasyApplier.Events.Mail;
 
-public record EmailVerificationEvent(String email, String uuid) {
+import java.util.UUID;
+
+public record EmailVerificationEvent(String email, UUID uuid) {
 }

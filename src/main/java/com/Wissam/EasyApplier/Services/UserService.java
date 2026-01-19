@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.Wissam.EasyApplier.Dto.User.UserRequest;
 import com.Wissam.EasyApplier.Dto.User.UserResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
@@ -20,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserService implements IUserService {
 
   private final UserRepository userRepo;
@@ -28,28 +28,33 @@ public class UserService implements IUserService {
   private final Cloudinary cloudinary;
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findUserByEmail(String email) {
     return userMapper.toUserResponse(userRepo.findByEmail(email)
         .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found")));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findUserById(Long id) {
     return userMapper.toUserResponse(
         userRepo.findById(id).orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found")));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponse> getAllUsers() {
     return userMapper.toUserResponseList(userRepo.findAll());
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponse> getAllUsersByRole(UserRole role) {
     return userMapper.toUserResponseList(userRepo.findAllByRole(role));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findUserByLinkedinId(Long linkedinId) {
     return userMapper.toUserResponse(
         userRepo.findUserByLinkedin_Id(linkedinId)
@@ -57,6 +62,7 @@ public class UserService implements IUserService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findUserByLinkedinEmail(String linkedinEmail) {
     return userMapper.toUserResponse(
         userRepo.findUserByLinkedin_Email(linkedinEmail)
@@ -82,6 +88,13 @@ public class UserService implements IUserService {
     } catch (Exception e) {
       throw new RuntimeException("Failed to upload resume to Cloudinary", e);
     }
+  }
+
+  @Override
+  @Transactional
+  public UserResponse updateUser(UserRequest userRequest, User user) {
+    userMapper.updateUserFromRequest(user, userRequest);
+    return userMapper.toUserResponse(userRepo.save(user));
   }
 
 }

@@ -1,13 +1,13 @@
 package com.Wissam.EasyApplier.Dto.User;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import com.Wissam.EasyApplier.Dto.Handshake.HandshakeResponse;
+import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,15 +20,26 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
 
-  @NotNull(message = "Id is required")
-  @Positive(message = "Id must be positive")
   private Long id;
 
-  @Email(message = "Email is not valid")
-  @NotNull(message = "Email is required")
   private String email;
 
+  private String resumeLink;
+
+  private String firstName;
+
+  private String lastName;
+
+  private String phoneNumber;
+
+  private boolean verified;
+
   private UserRole role;
+
+  private UUID uuid;
+
+  private LinkedinResponse linkedin;
+  private HandshakeResponse handshake;
 
   private LocalDateTime createdAt;
 

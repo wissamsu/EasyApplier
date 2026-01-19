@@ -1,5 +1,7 @@
 package com.Wissam.EasyApplier.Services;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,7 +40,7 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public String register(String email, String password, String uuid) {
+  public String register(String email, String password, UUID uuid) {
     if (userRepo.existsByEmail(email)) {
       return "User with email " + email + "already exists";
     }

@@ -112,7 +112,7 @@ public class LinkedinAuto {
       cookie.setSecure(true);
       cookie.setHttpOnly(true);
       context.addCookies(List.of(cookie));
-      Page page = context.newPage();
+      // Page page = context.newPage();
 
     } catch (Exception e) {
       log.error("Error while automating jobs: " + e.getMessage());

@@ -10,14 +10,14 @@ import com.microsoft.playwright.Playwright;
 @Configuration
 public class AutomationConfigs {
 
-  @Bean(destroyMethod = "close")
+  @Bean
   Playwright playwright() {
     return Playwright.create();
   }
 
-  @Bean(destroyMethod = "close")
-  Browser browser() {
-    return playwright().chromium()
+  @Bean
+  Browser browser(Playwright playwright) {
+    return playwright.chromium()
         .launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
   }
 

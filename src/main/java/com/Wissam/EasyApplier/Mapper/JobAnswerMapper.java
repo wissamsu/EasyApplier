@@ -1,5 +1,7 @@
 package com.Wissam.EasyApplier.Mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -7,26 +9,28 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.Wissam.EasyApplier.Dto.Handshake.HandshakeRequest;
-import com.Wissam.EasyApplier.Dto.Handshake.HandshakeResponse;
-import com.Wissam.EasyApplier.Model.Handshake;
+import com.Wissam.EasyApplier.Dto.JobAnswer.JobAnswerRequest;
+import com.Wissam.EasyApplier.Dto.JobAnswer.JobAnswerResponse;
+import com.Wissam.EasyApplier.Model.JobAnswer;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface HandshakeMapper {
+public interface JobAnswerMapper {
 
-  HandshakeResponse toHandshakeResponse(Handshake handshake);
+  JobAnswerResponse toJobAnswerResponse(JobAnswer jobAnswer);
 
-  HandshakeRequest toHandshakeRequest(Handshake handshake);
-
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "user", ignore = true)
-  Handshake toHandshake(HandshakeRequest handshakeRequest);
-
-  @Mapping(target = "user", ignore = true)
-  Handshake toHandshake(HandshakeResponse handshakeResponse);
+  JobAnswerRequest toJobAnswerRequest(JobAnswer jobAnswer);
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "user", ignore = true)
-  void updateHandshakeFromRequest(@MappingTarget Handshake handshake, HandshakeRequest handshakeRequest);
+  JobAnswer toJobAnswer(JobAnswerRequest jobAnswerRequest);
+
+  @Mapping(target = "user", ignore = true)
+  JobAnswer toJobAnswer(JobAnswerResponse jobAnswerResponse);
+
+  List<JobAnswerResponse> toJobAnswerResponseList(List<JobAnswer> jobAnswers);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "user", ignore = true)
+  void updateJobAnswerFromRequest(@MappingTarget JobAnswer jobAnswer, JobAnswerRequest jobAnswerRequest);
 
 }

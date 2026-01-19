@@ -1,6 +1,5 @@
 package com.Wissam.EasyApplier.Dto.Handshake;
 
-import com.Wissam.EasyApplier.Model.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +18,6 @@ public class HandshakeResponse {
 
   private String email;
 
-  private User user;
+  private String password;
 
 }

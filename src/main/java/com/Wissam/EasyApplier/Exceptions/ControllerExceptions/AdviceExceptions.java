@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.HandshakeNotFoundException;
+import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.JobAnswersNotFoundExceptions;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LiAtCookieInvalidException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LinkedinNotFoundException;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.QuestionOrIdNotFoundException;
@@ -19,6 +20,11 @@ public class AdviceExceptions {
 
   @ExceptionHandler(LinkedinNotFoundException.class)
   public ResponseEntity<String> handleLinkedinNotFoundException(LinkedinNotFoundException e) {
+    return ResponseEntity.status(404).body(e.getMessage());
+  }
+
+  @ExceptionHandler(JobAnswersNotFoundExceptions.class)
+  public ResponseEntity<String> handleJobAnswersNotFoundException(JobAnswersNotFoundExceptions e) {
     return ResponseEntity.status(404).body(e.getMessage());
   }
 
