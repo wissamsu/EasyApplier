@@ -115,6 +115,8 @@ public class GeneralJobExtractions {
         linkedinUtils.saveContext(context, statePath);
       } catch (Exception e) {
         log.error("Error while extracting jobs method jobsExtractor in class LinkedinJobsExtractor: " + e.getMessage());
+      } finally {
+        locks.remove(userId, lock);
       }
     }
   }
