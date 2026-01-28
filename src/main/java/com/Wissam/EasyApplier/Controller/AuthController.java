@@ -30,60 +30,60 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Auth", description = "Auth")
 public class AuthController {
 
-  private final IAuthService authService;
-  private final JwtUtils jwtUtils;
-  private final UserRepository userRepo;
-  private final ApplicationEventPublisher publisher;
+    private final IAuthService authService;
+    private final JwtUtils jwtUtils;
+    private final UserRepository userRepo;
+    private final ApplicationEventPublisher publisher;
 
-  @GetMapping("/failure")
-  public String failure() {
-    return "fuck";
-  }
-
-  @GetMapping("/hello")
-  public String hello() {
-    return "hello";
-  }
-
-  @GetMapping("/auth-status")
-  public boolean checkAuthentication() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-    if (auth == null || !auth.isAuthenticated()
-        || auth.getPrincipal().equals("anonymousUser")) {
-      return false;
+    @GetMapping("/failure")
+    public String failure() {
+        return "fuck";
     }
-    return true;
-  }
 
-  @PostMapping("/login")
-  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
-    String token = jwtUtils.generateToken(email);
-    Cookie cookie = new Cookie("jwt", token);
-    cookie.setMaxAge(3600);
-    cookie.setSecure(false);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-    response.addCookie(cookie);
-    return authService.login(email, password);
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello";
+    }
 
-  }
+    @GetMapping("/auth-status")
+    public boolean checkAuthentication() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-  @PostMapping("/register")
-  public String register(@RequestParam String email, @RequestParam String password) {
-    UUID uuid = UUID.randomUUID();
-    publisher.publishEvent(new EmailVerificationEvent(email, uuid));
-    return authService.register(email, password, uuid);
-  }
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getPrincipal().equals("anonymousUser")) {
+            return false;
+        }
+        return true;
+    }
 
-  @GetMapping("/verify/{uuid}")
-  public boolean verifyEmail(@PathVariable UUID uuid) {
-    User user = userRepo.findByUuid(uuid)
-        .orElseThrow(() -> new UserNotFoundException("User with uuid " + uuid + " not found"));
+    @PostMapping("/login")
+    public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
+        String token = jwtUtils.generateToken(email);
+        Cookie cookie = new Cookie("jwt", token);
+        cookie.setMaxAge(3600);
+        cookie.setSecure(false);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return authService.login(email, password);
 
-    user.setVerified(true);
-    authService.verifyUser(user);
-    return true;
-  }
+    }
+
+    @PostMapping("/register")
+    public String register(@RequestParam String email, @RequestParam String password) {
+        UUID uuid = UUID.randomUUID();
+        publisher.publishEvent(new EmailVerificationEvent(email, uuid));
+        return authService.register(email, password, uuid);
+    }
+
+    @GetMapping("/verify/{uuid}")
+    public boolean verifyEmail(@PathVariable UUID uuid) {
+        User user = userRepo.findByUuid(uuid)
+                .orElseThrow(() -> new UserNotFoundException("User with uuid " + uuid + " not found"));
+
+        user.setVerified(true);
+        authService.verifyUser(user);
+        return true;
+    }
 
 }

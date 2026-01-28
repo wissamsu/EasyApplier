@@ -1,27 +1,18 @@
 {
   "adapters": {
-    "coc-java-debug": {
-      "port": "${AdapterPort}"
+    "vscode-java": {
+      "command": ["java-debug-adapter"]
     }
   },
   "configurations": {
-    "launch": {
-      "adapter": "coc-java-debug",
+    "Spring Boot: Attach": {
+      "adapter": "vscode-java",
       "configuration": {
-        "args": "${args}",
-        "request": "launch",
-        "projectName": "${ProjectName}",
-        "mainClass": "${MainClass}",
-        "classPaths": [
-          "*${ClassPaths}"
-        ]
-      },
-      "breakpoints": {
-        "exception": {
-          "caught": "N",
-          "uncaught": "N"
-        }
+        "request": "attach",
+        "hostName": "localhost",
+        "port": 5005
       }
     }
   }
 }
+
