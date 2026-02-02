@@ -1,0 +1,13 @@
+2026.01.30 22:13:43 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /Users/wissam/Downloads/java/EasyApplier/.metals/lsp.trace.json or /Users/wissam/Library/Caches/org.scalameta.metals/lsp.trace.json[0m
+2026.01.30 22:13:44 INFO  logging to file /Users/wissam/Downloads/java/EasyApplier/.metals/metals.log[0m
+2026.01.30 22:13:44 INFO  Started: Metals version 0.11.2 in workspace '/Users/wissam/Downloads/java/EasyApplier' for client coc.nvim 0.0.82.[0m
+2026.01.30 22:13:44 INFO  Parse release: 21.0.9[0m
+2026.01.30 22:13:51 INFO  time: initialize in 6.59s[0m
+2026.01.30 22:13:55 WARN  Build server is not auto-connectable.[0m
+2026.01.31 22:49:05 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /Users/wissam/Downloads/java/EasyApplier/.metals/lsp.trace.json or /Users/wissam/Library/Caches/org.scalameta.metals/lsp.trace.json[0m
+2026.01.31 22:49:06 INFO  logging to file /Users/wissam/Downloads/java/EasyApplier/.metals/metals.log[0m
+2026.01.31 22:49:06 INFO  Started: Metals version 0.11.2 in workspace '/Users/wissam/Downloads/java/EasyApplier' for client coc.nvim 0.0.82.[0m
+2026.01.31 22:49:06 INFO  Parse release: 21.0.9[0m
+2026.01.31 22:49:09 INFO  time: initialize in 3.39s[0m
+2026.01.31 22:49:10 WARN  Build server is not auto-connectable.[0m
+2026.01.31 22:49:11 INFO  skipping build import with status 'Requested'[0m

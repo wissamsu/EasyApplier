@@ -35,12 +35,13 @@ public class HandshakeEasyJobExtractor {
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
 
   @Async
-  public void jobsExtractor(String jobTitle, User user, int pageNumber) {
+  public synchronized void jobsExtractor(String jobTitle, User user, int pageNumber) {
     UUID userId = user.getUuid();
     Object lock = locks.computeIfAbsent(userId, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(userId);
+    // first 25 jobs
     synchronized (lock) {
-      // first 25 jobs
+
       try (BrowserContext context = handshakeUtils.createOrLoadContext(statePath, browser);
           Page page = context.newPage();) {
         page.navigate("https://app.joinhandshake.com/job-search/?query=" + URLEncoder.encode(jobTitle, "UTF-8")
@@ -85,6 +86,7 @@ public class HandshakeEasyJobExtractor {
               new HandshakeEasyJobInfo(jobId, jobName, companyImageLink, jobLink, jobLocation, companyName, user));
 
         }
+        pageNumber++;
 
       } catch (Exception e) {
         log.error(e.getMessage());

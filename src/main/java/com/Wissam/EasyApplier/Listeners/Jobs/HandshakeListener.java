@@ -75,11 +75,11 @@ public class HandshakeListener {
               fileBytes);
 
           if (div.locator("input[type='file']").count() > 0) {
-            div.locator("input[type='file']").setInputFiles(payload);
+            div.locator("input[type='file']").nth(0).setInputFiles(payload);
             page.waitForTimeout(5000);
           }
           if (div.locator("input[type='file']").count() > 0) {
-            div.locator("input[type='file']").setInputFiles(payload);
+            div.locator("input[type='file']").nth(1).setInputFiles(payload);
             page.waitForTimeout(5000);
           }
           if (div.getByText("Submit application").count() > 0) {
