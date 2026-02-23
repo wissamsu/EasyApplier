@@ -38,6 +38,7 @@ public class HandshakeListener {
     UUID uuid = jobInfo.user().getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(uuid);
+
     synchronized (lock) {
       try (BrowserContext ctx = handshakeUtils.createOrLoadContext(statePath, browser); Page page = ctx.newPage();) {
         page.navigate(jobInfo.jobLink());
