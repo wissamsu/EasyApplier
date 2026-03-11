@@ -1,5 +1,9 @@
 package com.Wissam.EasyApplier.Dto.JobInfo;
 
+import java.util.Set;
+
+import org.bson.types.ObjectId;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -14,9 +18,11 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JobInfoResponse {
 
-  private Long id;
+  private ObjectId id;
 
   private String jobName;
+
+  private Set<String> appliedUsers;
 
   private String jobLocation;
 

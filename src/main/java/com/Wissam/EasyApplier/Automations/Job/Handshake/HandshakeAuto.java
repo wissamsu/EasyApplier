@@ -1,4 +1,4 @@
-package com.Wissam.EasyApplier.Listeners.Jobs;
+package com.Wissam.EasyApplier.Automations.Job.Handshake;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,11 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import com.Wissam.EasyApplier.ObjectReturns.job.HandshakeEasyJobInfo;
+import com.Wissam.EasyApplier.Dto.JobInfo.JobInfoResponse;
+import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Utils.GeneralUtils;
 import com.Wissam.EasyApplier.Utils.HandshakeUtils;
 import com.microsoft.playwright.Browser;
@@ -31,16 +31,15 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class HandshakeListener {
+public class HandshakeAuto {
 
   private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
   private final HandshakeUtils handshakeUtils;
   private final GeneralUtils generalUtils;
 
-  @EventListener
   @Async
-  public void onJobFoundEvent2(HandshakeEasyJobInfo jobInfo) {
-    UUID uuid = jobInfo.user().getUuid();
+  public void onJobFoundEvent2(JobInfoResponse jobInfo, User user) {
+    UUID uuid = user.getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(uuid);
 
@@ -51,12 +50,12 @@ public class HandshakeListener {
           BrowserContext ctx = handshakeUtils.createOrLoadContext(statePath, browser);
           Page page = ctx.newPage();) {
 
-        Document doc = Jsoup.connect(jobInfo.jobLink()).cookies(generalUtils.getCookiesFromBrowserContext(ctx)).get();
+        Document doc = Jsoup.connect(jobInfo.getJobUrl()).cookies(generalUtils.getCookiesFromBrowserContext(ctx)).get();
         if (doc.select("button[aria-label='Apply externally']").size() > 0) {
           System.out.println("Found button count is " + doc.select("button[aria-label='Apply externally']").size());
           return;
         } else {
-          page.navigate(jobInfo.jobLink());
+          page.navigate(jobInfo.getJobUrl());
 
           if (page.locator("button[aria-label='Apply externally']").count() > 0) {
 
@@ -70,14 +69,14 @@ public class HandshakeListener {
             div.waitFor();
             if (page.locator("input").count() > 0) {
               if (page.locator("input[name='phone']").count() > 0) {
-                page.locator("input[name='phone']").fill(jobInfo.user().getPhoneNumber());
+                page.locator("input[name='phone']").fill(user.getPhoneNumber());
               }
             }
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
-                    jobInfo.user().getResumeLink()))
+                    user.getResumeLink()))
                 .GET()
                 .build();
 
@@ -90,12 +89,9 @@ public class HandshakeListener {
                 "application/pdf",
                 fileBytes);
 
-            if (div.locator("input[type='file']").count() > 0) {
-              div.locator("input[type='file']").nth(0).setInputFiles(payload);
-              page.waitForTimeout(5000);
-            }
-            if (div.locator("input[type='file']").count() > 0) {
-              div.locator("input[type='file']").nth(1).setInputFiles(payload);
+            for (int i = 0; i < div.locator("input[type='file']").count(); i++) {
+              System.out.println(div.locator("input[type='file']").count());
+              div.locator("input[type='file']").nth(i).setInputFiles(payload);
               page.waitForTimeout(5000);
             }
             if (div.getByText("Submit application").count() > 0) {
@@ -103,12 +99,19 @@ public class HandshakeListener {
               page.waitForTimeout(1000);
             }
 
+            int time = 0;
             while (div.getByText("Submit application").isDisabled()) {
               page.waitForTimeout(1000);
+              time++;
+              if (time > 15) {
+                break;
+              }
+              System.out.println("Waiting for submit button to be enabled");
             }
             if (div.getByText("Submit application").count() > 0 && div.getByText("Submit application").isVisible()
                 && div.getByText("Submit application").isEnabled()) {
               div.getByText("Submit application").click();
+              System.out.println("Submitted application");
             }
           }
         }
@@ -117,78 +120,5 @@ public class HandshakeListener {
       }
     }
   }
-
-  // @EventListener
-  // @Async
-  // public void onJobFoundEvent(HandshakeEasyJobInfo jobInfo) {
-  // UUID uuid = jobInfo.user().getUuid();
-  // Object lock = locks.computeIfAbsent(uuid, id -> new Object());
-  // Path statePath = handshakeUtils.getContextPath(uuid);
-  //
-  // synchronized (lock) {
-  // try (BrowserContext ctx = handshakeUtils.createOrLoadContext(statePath,
-  // browser); Page page = ctx.newPage();) {
-  // page.navigate(jobInfo.jobLink());
-  //
-  // if (page.locator("button[aria-label='Apply externally']").count() > 0) {
-  //
-  // } else if (page.getByText("Withdraw application").count() > 0) {
-  // } else if (page.getByText("Your application has already been reviewed and
-  // cannot").count() > 0) {
-  // } else if (page.getByText("To withdraw your application,").count() > 0) {
-  // } else if (page.getByText("Did you apply to this job?").count() > 0) {
-  // } else {
-  // Locator div = page.locator("div[data-hook='apply-modal-content']");
-  // page.locator("button[aria-label='Apply']").first().click();
-  // div.waitFor();
-  // if (page.locator("input").count() > 0) {
-  // if (page.locator("input[name='phone']").count() > 0) {
-  // page.locator("input[name='phone']").fill(jobInfo.user().getPhoneNumber());
-  // }
-  // }
-  // HttpClient client = HttpClient.newHttpClient();
-  //
-  // HttpRequest request = HttpRequest.newBuilder()
-  // .uri(URI.create(
-  // jobInfo.user().getResumeLink()))
-  // .GET()
-  // .build();
-  //
-  // byte[] fileBytes = client
-  // .send(request, HttpResponse.BodyHandlers.ofByteArray())
-  // .body();
-  //
-  // FilePayload payload = new FilePayload(
-  // "WissamResume.pdf",
-  // "application/pdf",
-  // fileBytes);
-  //
-  // if (div.locator("input[type='file']").count() > 0) {
-  // div.locator("input[type='file']").nth(0).setInputFiles(payload);
-  // page.waitForTimeout(5000);
-  // }
-  // if (div.locator("input[type='file']").count() > 0) {
-  // div.locator("input[type='file']").nth(1).setInputFiles(payload);
-  // page.waitForTimeout(5000);
-  // }
-  // if (div.getByText("Submit application").count() > 0) {
-  // div.getByText("Submit application").click();
-  // page.waitForTimeout(1000);
-  // }
-  //
-  // while (div.getByText("Submit application").isDisabled()) {
-  // page.waitForTimeout(1000);
-  // }
-  // if (div.getByText("Submit application").count() > 0 && div.getByText("Submit
-  // application").isVisible()
-  // && div.getByText("Submit application").isEnabled()) {
-  // div.getByText("Submit application").click();
-  // }
-  // }
-  // } catch (Exception e) {
-  // log.error("Error: " + e.getMessage());
-  // }
-  // }
-  // }
 
 }

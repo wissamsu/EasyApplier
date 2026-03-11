@@ -1,5 +1,7 @@
 package com.Wissam.EasyApplier.Dto.JobInfo;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +22,8 @@ public class JobInfoRequest {
 
   @NotBlank(message = "Job ID is required")
   private String jobId;
+
+  private Set<String> appliedUsers;
 
   @NotBlank(message = "Job URL is required")
   private String jobUrl;

@@ -1,7 +1,9 @@
 package com.Wissam.EasyApplier.Model;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -20,13 +22,14 @@ import lombok.Setter;
 public class JobInfo {
 
   @Id
-  private String id;
+  private ObjectId id;
 
   private String jobName;
 
   private String jobLocation;
 
-  private Set<String> appliedUsers;
+  @Builder.Default
+  private Set<String> appliedUsers = new HashSet<>();
 
   private String jobId;
 

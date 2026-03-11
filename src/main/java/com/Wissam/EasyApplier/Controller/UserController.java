@@ -18,11 +18,13 @@ import com.Wissam.EasyApplier.Enums.UserRole;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Services.IServices.IUserService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Tag(name = "User")
 public class UserController {
 
   private final IUserService userService;
