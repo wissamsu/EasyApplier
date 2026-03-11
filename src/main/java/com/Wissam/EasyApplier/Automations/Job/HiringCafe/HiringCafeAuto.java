@@ -15,8 +15,10 @@ import org.springframework.stereotype.Component;
 import com.Wissam.EasyApplier.Model.User;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.FilePayload;
 import com.microsoft.playwright.options.LoadState;
@@ -30,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 public class HiringCafeAuto {
 
   private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
-  private final Browser browser;
 
   @Async
   public void jobAutomatorById(User user, String jobLink) {
@@ -38,6 +39,9 @@ public class HiringCafeAuto {
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     synchronized (lock) {
       try (
+          Playwright playwright = Playwright.create();
+          Browser browser = playwright.chromium()
+              .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
           BrowserContext ctx = browser.newContext();
           Page page = ctx.newPage();) {
 

@@ -20,7 +20,9 @@ import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneralJobExtractions {
 
   private final LinkedinUtils linkedinUtils;
-  private final Browser browser;
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
 
   @Async
@@ -42,7 +43,10 @@ public class GeneralJobExtractions {
     synchronized (lock) {
       Path statePath = linkedinUtils.getContextPath(userId);
       // first 25 jobs
-      try (BrowserContext context = linkedinUtils.createOrLoadContext(statePath, browser);
+      try (Playwright playwright = Playwright.create();
+          Browser browser = playwright.chromium()
+              .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
+          BrowserContext context = linkedinUtils.createOrLoadContext(statePath, browser);
           Page page = context.newPage();) {
 
         String li_at = linkedinUtils.checkOrgetLiAtCookie((UserDetails) user);

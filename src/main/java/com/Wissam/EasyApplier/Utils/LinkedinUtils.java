@@ -19,7 +19,9 @@ import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Browser.NewContextOptions;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinUtils {
 
   private final UserRepository userRepo;
-  private final Browser browser;
 
   public String checkOrgetLiAtCookie(UserDetails userDetails) {
     User user = userRepo.findByEmail(userDetails.getUsername())
@@ -54,6 +55,9 @@ public class LinkedinUtils {
     // .setUsername("jztdgogd")
     // .setPassword("94vn6lv3dieu");
     try (
+        Playwright playwright = Playwright.create();
+        Browser browser = playwright.chromium()
+            .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
         BrowserContext ctx = browser.newContext();) {
       Page page = ctx.newPage();
       page.navigate("https://www.linkedin.com/login");
@@ -73,6 +77,7 @@ public class LinkedinUtils {
         throw new RuntimeException("li_at cookie not found after login");
       }
 
+      page.close();
       return liAtCookie.get().value;
     } catch (Exception e) {
       throw new RuntimeException("Something went wrong in checkOrGetLiAtCookie error is: ", e);

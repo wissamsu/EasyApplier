@@ -15,7 +15,9 @@ import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.Cookie;
 import com.microsoft.playwright.options.LoadState;
 
@@ -27,11 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class LinkedinEasyJobsExtractor {
 
-  private final Browser browser;
-
   @Async
   public void jobsExtractor(String jobTitle, User user) {
     try (// first 25 jobs
+        Playwright playwright = Playwright.create();
+        Browser browser = playwright.chromium()
+            .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
         BrowserContext context = browser.newContext();) {
       Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");

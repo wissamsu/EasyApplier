@@ -1,21 +1,26 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: POSTGRES
-      POSTGRES_DB: easyapplier
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=POSTGRES
+      - POSTGRES_DB=easyapplier
     volumes:
-      - "./init.sql:/docker-entrypoint-initdb.d/init.sql"
-  app:
-    build: .
+      - postgres_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7
     ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
+      - "27017:27017"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/easyapplier
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: POSTGRES
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=easyapplier
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  postgres_data:
+  mongodb_data:

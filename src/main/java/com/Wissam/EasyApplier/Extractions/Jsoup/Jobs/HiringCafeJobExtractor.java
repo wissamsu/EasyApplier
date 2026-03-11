@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.ObjectReturns.job.HiringCafeJobInfo;
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HiringCafeJobExtractor {
 
-  private final Browser browser;
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
   private final ApplicationEventPublisher publisher;
 
@@ -34,7 +35,10 @@ public class HiringCafeJobExtractor {
     UUID uuid = user.getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     synchronized (lock) {
-      try (Page page = browser.newPage();) {
+      try (Playwright playwright = Playwright.create();
+          Browser browser = playwright.chromium()
+              .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
+          Page page = browser.newPage();) {
         page.navigate(
             "Https://hiring.cafe/?searchState=%7B%22applicationFormEase%22%3A%5B%22Simple%22%5D%2C%22searchQuery%22%3A%22"
                 + URLEncoder.encode(jobTitle, "UTF-8") + "%22%7D");

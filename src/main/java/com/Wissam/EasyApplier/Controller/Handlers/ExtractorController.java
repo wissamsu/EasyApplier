@@ -1,7 +1,5 @@
 package com.Wissam.EasyApplier.Controller.Handlers;
 
-import java.time.Duration;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,10 +35,7 @@ public class ExtractorController {
   @GetMapping("/extractHandshakeJobs/{jobTitle}")
   public void extractHandshakeJobs(@PathVariable String jobTitle,
       @AuthenticationPrincipal User user) throws InterruptedException {
-    for (int i = 0; i < 50; i++) {
-      handshakeEasyJobExtractor.jobsExtractor(jobTitle, user, i);
-      Thread.sleep(Duration.ofMinutes(30));
-    }
+    handshakeEasyJobExtractor.jobsExtractor(jobTitle, user);
   }
 
   @GetMapping("/extractGeneralJobs/{jobTitle}")
