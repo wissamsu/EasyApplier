@@ -32,9 +32,9 @@ public class HandshakeAutoController {
   public void applyToAllSavedJobs(@AuthenticationPrincipal User user) {
     List<JobInfoResponse> jobInfos = jobInfoService.findAll();
     for (JobInfoResponse jobInfo : jobInfos) {
-      // if (jobInfo.getAppliedUsers().contains(user.getId().toString())) {
-      // continue;
-      // }
+      if (jobInfo.getAppliedUsers().contains(user.getId().toString())) {
+        continue;
+      }
       handshakeAuto.onJobFoundEvent2(jobInfo, user);
       jobInfo.getAppliedUsers().add(user.getId().toString());
       jobInfoService.save(jobInfoMapper.toJobInfo(jobInfo));

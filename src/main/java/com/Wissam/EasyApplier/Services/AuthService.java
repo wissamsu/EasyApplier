@@ -41,9 +41,6 @@ public class AuthService implements IAuthService {
 
   @Override
   public String register(String email, String password, UUID uuid) {
-    if (userRepo.existsByEmail(email)) {
-      return "User with email " + email + "already exists";
-    }
     userRepo
         .save(User.builder().email(email).password(passwordEncoder.encode(password)).uuid(uuid).role(UserRole.ROLE_USER)
             .build());

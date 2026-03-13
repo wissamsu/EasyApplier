@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Config.Security;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -35,6 +36,12 @@ public class SecurityConfig {
   private final JwtFilterChain jwtFilterChain;
   private final OAuth2SuccessHandler oath2SuccesHandler;
   private final AuthenticationEntryPointImpl authEntryPoint;
+  @Value("${backend.host.url}")
+  private String backendHostUrl;
+  @Value("${frontend.host.url}")
+  private String frontendHostUrl;
+  @Value("${local.host.url}")
+  private String localHostUrl;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,6 +55,7 @@ public class SecurityConfig {
                 "/auth/**",
                 "/error",
                 "/login**",
+                "/register**",
                 "/oauth2/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**")
@@ -74,7 +82,7 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfig() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080"));
+    configuration.setAllowedOrigins(List.of(localHostUrl, frontendHostUrl, backendHostUrl));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowCredentials(true);
     configuration.setAllowedHeaders(List.of("*"));

@@ -9,7 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 public class HandshakeEasyJobExtractor {
 
   private final HandshakeUtils handshakeUtils;
-  private final ApplicationEventPublisher publisher;
   private final JobInfoRepository jobInfoRepo;
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
 

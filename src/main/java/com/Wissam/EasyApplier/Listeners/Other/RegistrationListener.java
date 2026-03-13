@@ -1,5 +1,6 @@
 package com.Wissam.EasyApplier.Listeners.Other;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 public class RegistrationListener {
 
   private final JavaMailServiceImpl javaMailSender;
-
+  @Value("${backend.host.url}")
+  private String backendHostUrl;
   Proxy proxy = new Proxy("http://142.111.48.253:7030")
       .setUsername("jztdgogd")
       .setPassword("94vn6lv3dieu");
@@ -25,7 +27,7 @@ public class RegistrationListener {
   @Async("taskExecutor")
   @EventListener
   public void onRegistrationEvent(EmailVerificationEvent event) {
-    javaMailSender.sendConfirmSignUpEmail(event.email(), "http://localhost:8080/auth/verify/" + event.uuid());
+    javaMailSender.sendConfirmSignUpEmail(event.email(), backendHostUrl + "/auth/verify/" + event.uuid());
   }
 
 }
