@@ -36,6 +36,7 @@ public class HandshakeAuto {
   private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
   private final HandshakeUtils handshakeUtils;
   private final GeneralUtils generalUtils;
+  private final ConcurrentHashMap<UUID, FilePayload> resumes = new ConcurrentHashMap<>();
 
   @Async
   public void onJobFoundEvent2(JobInfoResponse jobInfo, User user) {
@@ -72,27 +73,41 @@ public class HandshakeAuto {
                 page.locator("input[name='phone']").fill(user.getPhoneNumber());
               }
             }
-            HttpClient client = HttpClient.newHttpClient();
+            if (resumes.containsKey(user.getUuid())) {
 
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(
-                    user.getResumeLink()))
-                .GET()
-                .build();
+            } else {
+              HttpClient client = HttpClient.newHttpClient();
 
-            byte[] fileBytes = client
-                .send(request, HttpResponse.BodyHandlers.ofByteArray())
-                .body();
+              HttpRequest request = HttpRequest.newBuilder()
+                  .uri(URI.create(
+                      user.getResumeLink()))
+                  .GET()
+                  .build();
 
-            FilePayload payload = new FilePayload(
-                "WissamResume.pdf",
-                "application/pdf",
-                fileBytes);
+              byte[] fileBytes = client
+                  .send(request, HttpResponse.BodyHandlers.ofByteArray())
+                  .body();
 
-            for (int i = 0; i < div.locator("input[type='file']").count(); i++) {
-              System.out.println(div.locator("input[type='file']").count());
-              div.locator("input[type='file']").nth(i).setInputFiles(payload);
-              page.waitForTimeout(5000);
+              FilePayload payload = new FilePayload(
+                  "WissamResume.pdf",
+                  "application/pdf",
+                  fileBytes);
+
+              resumes.put(user.getUuid(), payload);
+            }
+            Locator mainResumeOptionsDiv = div.locator("div[role='listbox']");
+            for (int i = 0; i < mainResumeOptionsDiv.count(); i++) {
+              if (mainResumeOptionsDiv.locator("div[role='option'] span").count() > 0) {
+                mainResumeOptionsDiv.locator("div[role='option'] span").nth(i).click();
+
+              }
+            }
+            if (mainResumeOptionsDiv.locator("div[role='option'] span").count() == 0) {
+              for (int i = 0; i < div.locator("input[type='file']").count(); i++) {
+                System.out.println(div.locator("input[type='file']").count());
+                div.locator("input[type='file']").nth(i).setInputFiles(resumes.get(user.getUuid()));
+                page.waitForTimeout(5000);
+              }
             }
             if (div.getByText("Submit application").count() > 0) {
               div.getByText("Submit application").click();

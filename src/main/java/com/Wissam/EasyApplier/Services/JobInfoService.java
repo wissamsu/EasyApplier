@@ -46,4 +46,9 @@ public class JobInfoService implements IJobInfoService {
     jobInfoRepo.save(jobInfo);
   }
 
+  @Override
+  public boolean existsByJobId(String id) {
+    return jobInfoRepo.existsByJobId(id);
+  }
+
 }

@@ -33,6 +33,7 @@ public class HandshakeAutoController {
     List<JobInfoResponse> jobInfos = jobInfoService.findAll();
     for (JobInfoResponse jobInfo : jobInfos) {
       if (jobInfo.getAppliedUsers().contains(user.getId().toString())) {
+        System.out.println("Job already applied");
         continue;
       }
       handshakeAuto.onJobFoundEvent2(jobInfo, user);

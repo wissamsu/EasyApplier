@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.Wissam.EasyApplier.Model.JobInfo;
 import com.Wissam.EasyApplier.Model.User;
-import com.Wissam.EasyApplier.Repository.JobInfoRepository;
+import com.Wissam.EasyApplier.Services.JobInfoService;
 import com.Wissam.EasyApplier.Utils.HandshakeUtils;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -32,8 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 public class HandshakeEasyJobExtractor {
 
   private final HandshakeUtils handshakeUtils;
-  private final JobInfoRepository jobInfoRepo;
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
+  private final JobInfoService jobInfoService;
 
   @Async
   public void jobsExtractor(String jobTitle, User user) {
@@ -52,6 +52,7 @@ public class HandshakeEasyJobExtractor {
         int lastPage = 1000;
         // Repeat for 100 pages
         for (int pageNumber = 1; pageNumber <= lastPage; pageNumber++) {
+
           System.out.println("Processing page: " + pageNumber);
           page.navigate("https://app.joinhandshake.com/job-search/?query="
               + URLEncoder.encode(jobTitle, "UTF-8")
@@ -76,16 +77,25 @@ public class HandshakeEasyJobExtractor {
                     .locator("button").last().innerText());
             System.out.println("Last page: " + lastPage);
           }
-          page.waitForTimeout(5000); // optional delay
+          page.waitForTimeout(5000);
           Document doc = Jsoup.parse(page.content());
           Elements jobCards = doc.select("div[data-hook^='job-result-card ']");
 
           for (Element jobCard : jobCards) {
+            String jobId = handshakeUtils.extractJobId(
+                "https://app.joinhandshake.com" + jobCard.selectFirst("a[role='button']").attr("href"));
+            if (jobInfoService.existsByJobId(jobId)) {
+              System.out.println("Job with id " + jobId + " already exists");
+              continue;
+            }
             Element jobCardFooter = jobCard.selectFirst("div[data-hook='job-result-card-footer']");
             String jobLocation = jobCardFooter.selectFirst("span").text();
             String jobName = jobCard.selectFirst("a[role='button']").attr("aria-label");
-            String jobId = handshakeUtils.extractJobId(
-                "https://app.joinhandshake.com" + jobCard.selectFirst("a[role='button']").attr("href"));
+            // check if job name includes the job title
+            if (!jobName.toLowerCase().contains(jobTitle.toLowerCase())) {
+              continue;
+            }
+
             String jobLink = "https://app.joinhandshake.com/jobs/" + jobId;
             String companyName = jobCard.selectFirst("span").text();
             String companyImageLink = jobCard.select("img").attr("src");
@@ -103,7 +113,7 @@ public class HandshakeEasyJobExtractor {
               JobInfo jobInfo = JobInfo.builder().jobId(jobId).jobUrl(jobLink).jobName(jobName).jobLocation(jobLocation)
                   .jobCompanyName(companyName)
                   .jobCompanyImageLink(companyImageLink).build();
-              jobInfoRepo.save(jobInfo);
+              jobInfoService.save(jobInfo);
               System.out.println("Job saved: " + jobId);
             }
           }

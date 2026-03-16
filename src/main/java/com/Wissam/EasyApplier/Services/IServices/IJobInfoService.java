@@ -15,6 +15,8 @@ public interface IJobInfoService {
 
   public List<JobInfoResponse> findAll();
 
+  public boolean existsByJobId(String id);
+
   public void save(JobInfo jobInfo);
 
 }

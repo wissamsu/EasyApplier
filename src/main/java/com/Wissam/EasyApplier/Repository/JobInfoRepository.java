@@ -17,4 +17,6 @@ public interface JobInfoRepository extends MongoRepository<JobInfo, ObjectId> {
 
   List<JobInfo> findAllByJobName(String jobName);
 
+  boolean existsByJobId(String jobId);
+
 }
