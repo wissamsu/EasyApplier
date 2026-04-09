@@ -5,15 +5,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.Wissam.EasyApplier.ObjectReturns.job.HiringCafeJobInfo;
+import com.Wissam.EasyApplier.Messaging.Events.HiringCafeJobFoundEvent;
+import com.Wissam.EasyApplier.Model.User;
+import com.Wissam.EasyApplier.Services.AutomationUserService;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
@@ -32,12 +32,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HiringCafeListener {
 
-  private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<java.util.UUID, Object> locks = new ConcurrentHashMap<>();
+  private final AutomationUserService automationUserService;
 
-  @Async
-  @EventListener
-  public void onJobFoundEvent(HiringCafeJobInfo jobInfo) {
-    UUID uuid = jobInfo.user().getUuid();
+  @KafkaListener(
+      topics = "${app.kafka.topics.hiring-cafe-job-found}",
+      groupId = "${app.kafka.consumer-groups.hiring-cafe-job-found}",
+      containerFactory = "kafkaListenerContainerFactory")
+  public void onJobFoundEvent(HiringCafeJobFoundEvent event) {
+    User user = automationUserService.getRequiredAutomationUser(event.userUuid());
+    java.util.UUID uuid = user.getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     synchronized (lock) {
       try (
@@ -47,7 +51,7 @@ public class HiringCafeListener {
           BrowserContext ctx = browser.newContext();
           Page page = ctx.newPage();) {
 
-        page.navigate(jobInfo.jobLink());
+        page.navigate(event.jobLink());
         Page page2 = page.waitForPopup(() -> {
           page.getByText("Apply now").first().click();
         });
@@ -118,15 +122,15 @@ public class HiringCafeListener {
           confirm2.first().click();
         }
         if (firstName.count() > 0) {
-          firstName.first().fill(jobInfo.user().getFirstName());
+          firstName.first().fill(user.getFirstName());
         }
 
         if (firstName2.count() > 0) {
-          firstName2.first().fill(jobInfo.user().getFirstName() + " " + jobInfo.user().getLastName());
+          firstName2.first().fill(user.getFirstName() + " " + user.getLastName());
         }
 
         if (lastName.count() > 0) {
-          lastName.first().fill(jobInfo.user().getLastName());
+          lastName.first().fill(user.getLastName());
         }
 
         if (date.count() > 0) {
@@ -134,39 +138,39 @@ public class HiringCafeListener {
         }
 
         if (linkedinProfileUrl.count() > 0) {
-          linkedinProfileUrl.first().fill(jobInfo.user().getJobAnswer().getLinkedinProfileUrl());
+          linkedinProfileUrl.first().fill(user.getJobAnswer().getLinkedinProfileUrl());
         }
 
         if (preferredName.count() > 0) {
-          preferredName.first().fill(jobInfo.user().getFirstName());
+          preferredName.first().fill(user.getFirstName());
         }
 
         if (email.count() > 0) {
-          email.first().fill(jobInfo.user().getEmail());
+          email.first().fill(user.getEmail());
         }
 
         if (email2.count() > 0) {
-          email2.first().fill(jobInfo.user().getEmail());
+          email2.first().fill(user.getEmail());
         }
 
         if (phone.count() > 0) {
-          phone.first().fill(jobInfo.user().getPhoneNumber());
+          phone.first().fill(user.getPhoneNumber());
         }
 
         if (Address.count() > 0) {
-          Address.first().fill(jobInfo.user().getJobAnswer().getAddress());
+          Address.first().fill(user.getJobAnswer().getAddress());
         }
 
         if (city.count() > 0) {
-          city.first().fill(jobInfo.user().getJobAnswer().getCity());
+          city.first().fill(user.getJobAnswer().getCity());
         }
 
         if (state.count() > 0) {
-          state.first().fill(jobInfo.user().getJobAnswer().getState());
+          state.first().fill(user.getJobAnswer().getState());
         }
 
         if (postal.count() > 0) {
-          postal.first().fill(jobInfo.user().getJobAnswer().getZipCode());
+          postal.first().fill(user.getJobAnswer().getZipCode());
         }
 
         if (resumeUpload.count() > 0) {
@@ -175,7 +179,7 @@ public class HiringCafeListener {
 
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
-                    jobInfo.user().getResumeLink()))
+                    user.getResumeLink()))
                 .GET()
                 .build();
 
@@ -191,11 +195,11 @@ public class HiringCafeListener {
           }
         }
         if (country.count() > 0) {
-          country.first().fill(jobInfo.user().getJobAnswer().getCountry());
+          country.first().fill(user.getJobAnswer().getCountry());
           country.press("Enter");
         }
         if (city2.count() > 0) {
-          city2.first().fill(jobInfo.user().getJobAnswer().getCity());
+          city2.first().fill(user.getJobAnswer().getCity());
         }
 
         if (requireSponsorshipCheckBox.count() > 0) {

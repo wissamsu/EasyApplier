@@ -1,13 +1,11 @@
 package com.Wissam.EasyApplier.Listeners.Other;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.Wissam.EasyApplier.Email.JavaMailServiceImpl;
-import com.Wissam.EasyApplier.Events.Mail.EmailVerificationEvent;
-import com.microsoft.playwright.options.Proxy;
+import com.Wissam.EasyApplier.Messaging.Events.EmailVerificationRequestedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,16 +16,16 @@ import lombok.extern.slf4j.Slf4j;
 public class RegistrationListener {
 
   private final JavaMailServiceImpl javaMailSender;
+
   @Value("${backend.host.url}")
   private String backendHostUrl;
-  Proxy proxy = new Proxy("http://142.111.48.253:7030")
-      .setUsername("jztdgogd")
-      .setPassword("94vn6lv3dieu");
 
-  @Async("taskExecutor")
-  @EventListener
-  public void onRegistrationEvent(EmailVerificationEvent event) {
-    javaMailSender.sendConfirmSignUpEmail(event.email(), backendHostUrl + "/auth/verify/" + event.uuid());
+  @KafkaListener(
+      topics = "${app.kafka.topics.email-verification}",
+      groupId = "${app.kafka.consumer-groups.email-verification}",
+      containerFactory = "kafkaListenerContainerFactory")
+  public void onRegistrationEvent(EmailVerificationRequestedEvent event) {
+    javaMailSender.sendConfirmSignUpEmail(event.email(), backendHostUrl + "/auth/verify/" + event.verificationToken());
   }
 
 }

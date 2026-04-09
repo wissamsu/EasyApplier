@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -28,6 +27,7 @@ import com.Wissam.EasyApplier.Config.Security.FilterChains.JwtFilterChain;
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
 import com.Wissam.EasyApplier.Dto.User.UserResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
+import com.Wissam.EasyApplier.Messaging.KafkaEventPublisher;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Services.IServices.IAuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,7 @@ class AuthControllerTest {
   private UserRepository userRepo;
 
   @MockitoBean
-  private ApplicationEventPublisher publisher;
+  private KafkaEventPublisher kafkaEventPublisher;
 
   @MockitoBean
   private CustomUserDetailsService userDetailsService;

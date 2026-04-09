@@ -2,7 +2,6 @@ package com.Wissam.EasyApplier.Extractions.Jsoup.Jobs;
 
 import java.net.URLEncoder;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.Wissam.EasyApplier.Messaging.KafkaEventPublisher;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.Wissam.EasyApplier.Utils.LinkedinUtils;
@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GeneralJobExtractions {
 
   private final LinkedinUtils linkedinUtils;
+  private final KafkaEventPublisher kafkaEventPublisher;
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
 
   @Async
@@ -65,7 +66,6 @@ public class GeneralJobExtractions {
 
         int i = 1;
 
-        List<LinkedinEasyJobInfo> jobInfos = new ArrayList<>();
         for (Element jobCard : jobCards) {
 
           boolean isApplied = jobCard
@@ -82,7 +82,7 @@ public class GeneralJobExtractions {
           log.info("--------------------------------------------------------------------------");
           log.info("Extracting job {} jobId={}", i++, jobId);
           LinkedinEasyJobInfo jobInfo = jobInfoExtractor(page, jobId, context, user);
-          jobInfos.add(jobInfo);
+          publishJobFound(jobInfo, user);
 
         }
 
@@ -112,8 +112,7 @@ public class GeneralJobExtractions {
           log.info("--------------------------------------------------------------------------");
           log.info("Extracting job {} jobId={}", i++, jobId);
           LinkedinEasyJobInfo jobInfo = jobInfoExtractor(page, jobId, context, user);
-
-          jobInfos.add(jobInfo);
+          publishJobFound(jobInfo, user);
 
         }
         linkedinUtils.saveContext(context, statePath);
@@ -173,6 +172,21 @@ public class GeneralJobExtractions {
           + e.getMessage());
       return null;
     }
+  }
+
+  private void publishJobFound(LinkedinEasyJobInfo jobInfo, User user) {
+    if (jobInfo == null) {
+      return;
+    }
+
+    kafkaEventPublisher.publishLinkedinJobFound(
+        jobInfo.jobId(),
+        jobInfo.jobTitle(),
+        jobInfo.jobImageLink(),
+        jobInfo.jobLink(),
+        jobInfo.jobLocation(),
+        jobInfo.jobCompany(),
+        user.getUuid());
   }
 
 }

@@ -2,12 +2,13 @@ package com.Wissam.EasyApplier.Automations.Job.Linkedin;
 
 import java.util.List;
 
-import org.springframework.context.event.EventListener;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.Wissam.EasyApplier.Messaging.Events.LinkedinJobFoundEvent;
 import com.Wissam.EasyApplier.Model.User;
-import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
+import com.Wissam.EasyApplier.Services.AutomationUserService;
 import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LinkedinAuto {
 
   private final LinkedinUtils linkedinUtils;
+  private final AutomationUserService automationUserService;
 
   List<String> jobIds = List.of(
       "4342675398",
@@ -126,22 +128,25 @@ public class LinkedinAuto {
     }
   }
 
-  @EventListener
-  @Async
-  public void jobAutomatorByIdWithEvent(LinkedinEasyJobInfo jobInfo) {
-    linkedinUtils.checkOrgetLiAtCookie(jobInfo.user());
+  @KafkaListener(
+      topics = "${app.kafka.topics.linkedin-job-found}",
+      groupId = "${app.kafka.consumer-groups.linkedin-job-found}",
+      containerFactory = "kafkaListenerContainerFactory")
+  public void jobAutomatorByIdWithEvent(LinkedinJobFoundEvent event) {
+    User user = automationUserService.getRequiredAutomationUser(event.userUuid());
+    linkedinUtils.checkOrgetLiAtCookie(user);
     try (
         Playwright playwright = Playwright.create();
         Browser browser = playwright.chromium()
             .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
         BrowserContext context = browser.newContext();) {
-      Cookie cookie = new Cookie("li_at", jobInfo.user().getLinkedin().getLiatCookie());
+      Cookie cookie = new Cookie("li_at", user.getLinkedin().getLiatCookie());
       cookie.setUrl("https://www.linkedin.com");
       cookie.setSecure(true);
       cookie.setHttpOnly(true);
       context.addCookies(List.of(cookie));
       Page page = context.newPage();
-      page.navigate("https://www.linkedin.com/jobs/view/" + jobInfo.jobId());
+      page.navigate("https://www.linkedin.com/jobs/view/" + event.jobId());
       page.waitForLoadState(LoadState.DOMCONTENTLOADED);
       page.getByText("Easy Apply").first().click();
       Locator dialog = page.locator("div[role='region']").first();

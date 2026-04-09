@@ -2,7 +2,6 @@ package com.Wissam.EasyApplier.Controller;
 
 import java.util.UUID;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
-import com.Wissam.EasyApplier.Events.Mail.EmailVerificationEvent;
 import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
+import com.Wissam.EasyApplier.Messaging.KafkaEventPublisher;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Services.IServices.IAuthService;
@@ -34,7 +33,7 @@ public class AuthController {
   private final IAuthService authService;
   private final JwtUtils jwtUtils;
   private final UserRepository userRepo;
-  private final ApplicationEventPublisher publisher;
+  private final KafkaEventPublisher kafkaEventPublisher;
 
   @GetMapping("/failure")
   public String failure() {
@@ -82,8 +81,9 @@ public class AuthController {
       return "User with email " + email + " already exists";
     }
     UUID uuid = UUID.randomUUID();
-    publisher.publishEvent(new EmailVerificationEvent(email, uuid));
-    return authService.register(email, password, uuid);
+    String result = authService.register(email, password, uuid);
+    kafkaEventPublisher.publishEmailVerificationRequested(email, uuid);
+    return result;
   }
 
   @GetMapping("/verify/{uuid}")

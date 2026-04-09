@@ -8,12 +8,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.Wissam.EasyApplier.Messaging.KafkaEventPublisher;
 import com.Wissam.EasyApplier.Model.User;
-import com.Wissam.EasyApplier.ObjectReturns.job.HiringCafeJobInfo;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Page;
@@ -28,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HiringCafeJobExtractor {
 
   private ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
-  private final ApplicationEventPublisher publisher;
+  private final KafkaEventPublisher kafkaEventPublisher;
 
   @Async
   public void jobExtractor(User user, String jobTitle) {
@@ -66,8 +65,14 @@ public class HiringCafeJobExtractor {
           log.info("Job location: " + jobLocation);
           String companyName = jobDiv.select(".line-clamp-3 .font-bold").text();
           log.info("Company name: " + companyName);
-          publisher.publishEvent(
-              new HiringCafeJobInfo(jobId, jobName, jobImageLink, jobLink, jobLocation, companyName, user));
+          kafkaEventPublisher.publishHiringCafeJobFound(
+              jobId,
+              jobName,
+              jobImageLink,
+              jobLink,
+              jobLocation,
+              companyName,
+              user.getUuid());
         }
       } catch (Exception e) {
         e.printStackTrace();

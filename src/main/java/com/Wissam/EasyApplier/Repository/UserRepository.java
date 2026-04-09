@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.Wissam.EasyApplier.Enums.UserRole;
@@ -18,6 +20,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmail(String email);
 
   Optional<User> findByUuid(UUID uuid);
+
+  @Query("""
+      select u
+      from User u
+      left join fetch u.linkedin
+      left join fetch u.handshake
+      left join fetch u.jobAnswer
+      where u.uuid = :uuid
+      """)
+  Optional<User> findAutomationUserByUuid(@Param("uuid") UUID uuid);
 
   List<User> findAllByRole(UserRole role);
 

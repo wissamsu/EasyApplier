@@ -10,11 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.Wissam.EasyApplier.ObjectReturns.job.HandshakeEasyJobInfo;
+import com.Wissam.EasyApplier.Messaging.Events.HandshakeJobFoundEvent;
+import com.Wissam.EasyApplier.Model.User;
+import com.Wissam.EasyApplier.Services.AutomationUserService;
 import com.Wissam.EasyApplier.Utils.GeneralUtils;
 import com.Wissam.EasyApplier.Utils.HandshakeUtils;
 import com.microsoft.playwright.Browser;
@@ -34,13 +35,17 @@ import lombok.extern.slf4j.Slf4j;
 public class HandshakeListener {
 
   private final ConcurrentHashMap<UUID, Object> locks = new ConcurrentHashMap<>();
+  private final AutomationUserService automationUserService;
   private final HandshakeUtils handshakeUtils;
   private final GeneralUtils generalUtils;
 
-  @EventListener
-  @Async
-  public void onJobFoundEvent2(HandshakeEasyJobInfo jobInfo) {
-    UUID uuid = jobInfo.user().getUuid();
+  @KafkaListener(
+      topics = "${app.kafka.topics.handshake-job-found}",
+      groupId = "${app.kafka.consumer-groups.handshake-job-found}",
+      containerFactory = "kafkaListenerContainerFactory")
+  public void onJobFoundEvent2(HandshakeJobFoundEvent event) {
+    User user = automationUserService.getRequiredAutomationUser(event.userUuid());
+    UUID uuid = user.getUuid();
     Object lock = locks.computeIfAbsent(uuid, id -> new Object());
     Path statePath = handshakeUtils.getContextPath(uuid);
 
@@ -51,12 +56,12 @@ public class HandshakeListener {
           BrowserContext ctx = handshakeUtils.createOrLoadContext(statePath, browser);
           Page page = ctx.newPage();) {
 
-        Document doc = Jsoup.connect(jobInfo.jobLink()).cookies(generalUtils.getCookiesFromBrowserContext(ctx)).get();
+        Document doc = Jsoup.connect(event.jobLink()).cookies(generalUtils.getCookiesFromBrowserContext(ctx)).get();
         if (doc.select("button[aria-label='Apply externally']").size() > 0) {
           System.out.println("Found button count is " + doc.select("button[aria-label='Apply externally']").size());
           return;
         } else {
-          page.navigate(jobInfo.jobLink());
+          page.navigate(event.jobLink());
 
           if (page.locator("button[aria-label='Apply externally']").count() > 0) {
 
@@ -70,14 +75,14 @@ public class HandshakeListener {
             div.waitFor();
             if (page.locator("input").count() > 0) {
               if (page.locator("input[name='phone']").count() > 0) {
-                page.locator("input[name='phone']").fill(jobInfo.user().getPhoneNumber());
+                page.locator("input[name='phone']").fill(user.getPhoneNumber());
               }
             }
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
-                    jobInfo.user().getResumeLink()))
+                    user.getResumeLink()))
                 .GET()
                 .build();
 

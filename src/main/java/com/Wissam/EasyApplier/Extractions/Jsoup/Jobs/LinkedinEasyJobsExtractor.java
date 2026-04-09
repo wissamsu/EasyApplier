@@ -1,7 +1,6 @@
 package com.Wissam.EasyApplier.Extractions.Jsoup.Jobs;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
@@ -11,6 +10,7 @@ import org.jsoup.select.Elements;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.Wissam.EasyApplier.Messaging.KafkaEventPublisher;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.ObjectReturns.job.LinkedinEasyJobInfo;
 import com.microsoft.playwright.Browser;
@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class LinkedinEasyJobsExtractor {
+
+  private final KafkaEventPublisher kafkaEventPublisher;
 
   @Async
   public void jobsExtractor(String jobTitle, User user) {
@@ -54,7 +56,6 @@ public class LinkedinEasyJobsExtractor {
 
       int i = 1;
 
-      List<LinkedinEasyJobInfo> jobInfos = new ArrayList<>();
       for (Element jobCard : jobCards) {
 
         boolean isApplied = jobCard
@@ -71,7 +72,7 @@ public class LinkedinEasyJobsExtractor {
         log.info("--------------------------------------------------------------------------");
         log.info("Extracting job {} jobId={}", i++, jobId);
         LinkedinEasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
-        jobInfos.add(jobInfo);
+        publishJobFound(jobInfo, user);
 
       }
 
@@ -101,8 +102,7 @@ public class LinkedinEasyJobsExtractor {
         log.info("--------------------------------------------------------------------------");
         log.info("Extracting job {} jobId={}", i++, jobId);
         LinkedinEasyJobInfo jobInfo = jobInfoExtractor(jobId, context, user);
-
-        jobInfos.add(jobInfo);
+        publishJobFound(jobInfo, user);
 
       }
 
@@ -159,13 +159,27 @@ public class LinkedinEasyJobsExtractor {
       // TODO: add job description
 
       log.info("--------------------------------------------------------------------------");
-      page.close();
       return new LinkedinEasyJobInfo(jobId, jobTitle, imgLink, jobLink, actualJobLocation, companyName, user);
     } catch (Exception e) {
       log.error("Error while extracting job info method jobInfoExtractor in class LinkedinJobsExtractor: "
           + e.getMessage());
       return null;
     }
+  }
+
+  private void publishJobFound(LinkedinEasyJobInfo jobInfo, User user) {
+    if (jobInfo == null) {
+      return;
+    }
+
+    kafkaEventPublisher.publishLinkedinJobFound(
+        jobInfo.jobId(),
+        jobInfo.jobTitle(),
+        jobInfo.jobImageLink(),
+        jobInfo.jobLink(),
+        jobInfo.jobLocation(),
+        jobInfo.jobCompany(),
+        user.getUuid());
   }
 
 }
