@@ -14,6 +14,7 @@ import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinRequest;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Services.IServices.ILinkedinService;
+import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class LinkedinController {
 
   private final ILinkedinService linkedinService;
+  private final LinkedinUtils linkedinUtils;
 
   @GetMapping("/{id}")
   @Operation(summary = "Get Linkedin by id")
@@ -48,8 +50,8 @@ public class LinkedinController {
 
   @GetMapping("/cookie")
   @Operation(summary = "Check or get Linkedin Li_at cookie")
-  public ResponseEntity<Void> checkOrgetLiAtCookie(@AuthenticationPrincipal UserDetails userDetails) {
-    return ResponseEntity.ok(null);
+  public ResponseEntity<String> checkOrgetLiAtCookie(@AuthenticationPrincipal UserDetails userDetails) {
+    return ResponseEntity.ok(linkedinUtils.checkOrgetLiAtCookie(userDetails));
   }
 
   @PutMapping("/cookie/{liAtCookie}")

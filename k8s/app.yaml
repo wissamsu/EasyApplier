@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spring-boot-api
+  template:
+    metadata:
+      labels:
+        app: spring-boot-api
+    spec:
+      containers:
+        - name: spring-app
+          image: aasyapplier:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          # Spring Boot Actuator Health Checks
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+# 2. THE SERVICE: The internal Load Balancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-service
+spec:
+  selector:
+    app: spring-boot-api # This finds the Pods from the Deployment above
+  ports:
+    - protocol: TCP
+      port: 80 # Port the Service listens on
+      targetPort: 8080 # Port the Spring app is actually running on
+  type: ClusterIP # Internal-only IP (Standard for microservices)
