@@ -100,7 +100,8 @@ class AuthControllerTest {
     void shouldReturnFailureMessage() throws Exception {
       mockMvc.perform(get("/auth/failure"))
           .andExpect(status().isOk())
-          .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string("fuck"));
+          .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+              .string("Authentication failed"));
     }
   }
 

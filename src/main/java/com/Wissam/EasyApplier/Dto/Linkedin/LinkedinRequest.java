@@ -1,8 +1,8 @@
 package com.Wissam.EasyApplier.Dto.Linkedin;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class LinkedinRequest {
   @NotBlank(message = "email is required")
   private String email;
 
-  @Min(value = 8, message = "password must be at least 8 characters")
+  @Size(min = 8, message = "password must be at least 8 characters")
   @NotBlank(message = "password is required")
   private String password;
 

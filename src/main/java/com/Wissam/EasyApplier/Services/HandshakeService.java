@@ -26,7 +26,7 @@ public class HandshakeService implements IHandshakeService {
 
   @Override
   @Transactional(readOnly = true)
-  public HandshakeResponse getHandshake(@AuthenticationPrincipal User user) {
+  public HandshakeResponse getHandshake(User user) {
     return handshakeMapper.toHandshakeResponse(user.getHandshake());
   }
 

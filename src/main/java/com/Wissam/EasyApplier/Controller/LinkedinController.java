@@ -3,10 +3,12 @@ package com.Wissam.EasyApplier.Controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,12 +20,14 @@ import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/linkedin")
 @RequiredArgsConstructor
 @Tag(name = "Linkedin", description = "Linkedin endpoints")
+@Validated
 public class LinkedinController {
 
   private final ILinkedinService linkedinService;
@@ -31,19 +35,19 @@ public class LinkedinController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get Linkedin by id")
-  public ResponseEntity<LinkedinResponse> getLinkedinById(Long id) {
+  public ResponseEntity<LinkedinResponse> getLinkedinById(@PathVariable Long id) {
     return ResponseEntity.ok(linkedinService.getLinkedinById(id));
   }
 
   @GetMapping("/email/{email}")
   @Operation(summary = "Get Linkedin by email")
-  public ResponseEntity<LinkedinResponse> getLinkedinByEmail(String email) {
+  public ResponseEntity<LinkedinResponse> getLinkedinByEmail(@PathVariable String email) {
     return ResponseEntity.ok(linkedinService.getLinkedinByEmail(email));
   }
 
-  @PostMapping("/user/")
+  @PostMapping("/user")
   @Operation(summary = "Create Linkedin")
-  public ResponseEntity<LinkedinResponse> createLinkedinByUserId(LinkedinRequest linkedinRequest,
+  public ResponseEntity<LinkedinResponse> createLinkedinByUserId(@Valid @RequestBody LinkedinRequest linkedinRequest,
       @AuthenticationPrincipal User user) {
     return ResponseEntity.ok(linkedinService.createLinkedin(linkedinRequest, user));
   }

@@ -21,6 +21,7 @@ import com.Wissam.EasyApplier.Services.IServices.IAuthService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +38,7 @@ public class AuthController {
 
   @GetMapping("/failure")
   public String failure() {
-    return "fuck";
+    return "Authentication failed";
   }
 
   @GetMapping("/hello")
@@ -57,15 +58,21 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
-    String token = jwtUtils.generateToken(email);
-    Cookie cookie = new Cookie("jwt", token);
-    cookie.setMaxAge(3600);
-    cookie.setSecure(true);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-    response.addCookie(cookie);
-    return authService.login(email, password);
+  public boolean login(@RequestParam String email, @RequestParam String password, HttpServletRequest request,
+      HttpServletResponse response) {
+    boolean authenticated = authService.login(email, password);
+
+    if (authenticated) {
+      String token = jwtUtils.generateToken(email);
+      Cookie cookie = new Cookie("jwt", token);
+      cookie.setMaxAge(3600);
+      cookie.setSecure(request.isSecure());
+      cookie.setHttpOnly(true);
+      cookie.setPath("/");
+      response.addCookie(cookie);
+    }
+
+    return authenticated;
 
   }
 

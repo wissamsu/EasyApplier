@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Config.Security;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -25,6 +26,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
   private final JwtUtils jwtUtils;
   private final UserRepository userRepo;
+  @Value("${frontend.host.url}")
+  private String frontendHostUrl;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -37,7 +40,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     log.info("OAuth2 login 2");
     if (email == null || email.isEmpty()) {
-      response.sendRedirect("http://localhost:4200/Home");
+      response.sendRedirect(frontendHostUrl + "/Home");
       return;
     }
     User user = userRepo.findByEmail(email).orElseGet(() -> {
@@ -54,12 +57,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     Cookie cookie = new Cookie("jwt", token);
     cookie.setHttpOnly(true);
-    cookie.setSecure(false);
+    cookie.setSecure(request.isSecure());
     cookie.setPath("/");
     cookie.setMaxAge(7 * 24 * 60 * 60);
 
     log.info("OAuth2 login 4");
     response.addCookie(cookie);
-    response.sendRedirect("http://localhost:4200/Home");
+    response.sendRedirect(frontendHostUrl + "/Home");
   }
 }

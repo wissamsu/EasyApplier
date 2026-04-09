@@ -3,7 +3,9 @@ package com.Wissam.EasyApplier.Controller;
 import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,17 +27,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 @Tag(name = "User")
+@Validated
 public class UserController {
 
   private final IUserService userService;
 
   @GetMapping("/email/{email}")
-  public UserResponse findUserByEmail(String email) {
+  public UserResponse findUserByEmail(@PathVariable String email) {
     return userService.findUserByEmail(email);
   }
 
   @GetMapping("/{id}")
-  public UserResponse findUserById(Long id) {
+  public UserResponse findUserById(@PathVariable Long id) {
     return userService.findUserById(id);
   }
 
@@ -45,17 +48,17 @@ public class UserController {
   }
 
   @GetMapping("/role/{role}")
-  public List<UserResponse> getAllUsersByRole(UserRole role) {
+  public List<UserResponse> getAllUsersByRole(@PathVariable UserRole role) {
     return userService.getAllUsersByRole(role);
   }
 
   @GetMapping("/linkedinId/{linkedinId}")
-  public UserResponse findUserByLinkedinId(Long linkedinId) {
+  public UserResponse findUserByLinkedinId(@PathVariable Long linkedinId) {
     return userService.findUserByLinkedinId(linkedinId);
   }
 
   @GetMapping("/linkedinEmail/{linkedinEmail}")
-  public UserResponse findUserByLinkedinEmail(String linkedinEmail) {
+  public UserResponse findUserByLinkedinEmail(@PathVariable String linkedinEmail) {
     return userService.findUserByLinkedinEmail(linkedinEmail);
   }
 

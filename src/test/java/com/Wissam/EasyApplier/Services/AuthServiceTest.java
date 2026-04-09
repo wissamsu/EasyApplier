@@ -64,7 +64,6 @@ class AuthServiceTest {
         @DisplayName("should return true when login is successful")
         void shouldReturnTrueWhenLoginIsSuccessful() {
             when(userRepo.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches("password", testUser.getPassword())).thenReturn(true);
 
             Authentication authentication = mock(Authentication.class);
             when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
@@ -73,19 +72,18 @@ class AuthServiceTest {
 
             assertThat(result).isTrue();
             verify(userRepo).findByEmail(testUser.getEmail());
-            verify(passwordEncoder).matches("password", testUser.getPassword());
         }
 
         @Test
         @DisplayName("should return false when password is invalid")
         void shouldReturnFalseWhenPasswordIsInvalid() {
             when(userRepo.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches("wrongPassword", testUser.getPassword())).thenReturn(false);
+            when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .thenThrow(new BadCredentialsException("Bad credentials"));
 
             boolean result = authService.login(testUser.getEmail(), "wrongPassword");
 
             assertThat(result).isFalse();
-            verify(authManager, never()).authenticate(any());
         }
 
         @Test
@@ -93,7 +91,6 @@ class AuthServiceTest {
         void shouldReturnFalseWhenUserNotVerified() {
             testUser.setVerified(false);
             when(userRepo.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches("password", testUser.getPassword())).thenReturn(true);
 
             boolean result = authService.login(testUser.getEmail(), "password");
 
@@ -114,7 +111,6 @@ class AuthServiceTest {
         @DisplayName("should throw exception when authentication fails")
         void shouldThrowExceptionWhenAuthenticationFails() {
             when(userRepo.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches("password", testUser.getPassword())).thenReturn(true);
             when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenThrow(new BadCredentialsException("Bad credentials"));
 

@@ -72,11 +72,15 @@ public class UserService implements IUserService {
   @Override
   @Transactional
   public String uploadResume(User user, MultipartFile file) {
+    if (file.isEmpty()) {
+      throw new IllegalArgumentException("Resume file must not be empty");
+    }
+
     try {
       var uploadResult = cloudinary.uploader().upload(
           file.getBytes(),
           ObjectUtils.asMap(
-              "resource_type", "image",
+              "resource_type", "raw",
               "folder", "resumes"));
 
       String resumeUrl = uploadResult.get("secure_url").toString();

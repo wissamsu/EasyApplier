@@ -3,6 +3,7 @@ package com.Wissam.EasyApplier.Services;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,17 +31,26 @@ public class AuthService implements IAuthService {
   @Override
   public boolean login(String email, String password) {
     User user = userRepo.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
-    boolean isValid = passwordEncoder.matches(password, user.getPassword());
-    if (isValid && user.isVerified()) {
-      Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-      SecurityContextHolder.getContext().setAuthentication(auth);
-      return true;
+
+    if (user.isVerified()) {
+      try {
+        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        return true;
+      } catch (AuthenticationException ex) {
+        log.warn("Login failed for {}", email);
+      }
     }
+
     return false;
   }
 
   @Override
   public String register(String email, String password, UUID uuid) {
+    if (userRepo.existsByEmail(email)) {
+      throw new IllegalArgumentException("User with email " + email + " already exists");
+    }
+
     userRepo
         .save(User.builder().email(email).password(passwordEncoder.encode(password)).uuid(uuid).role(UserRole.ROLE_USER)
             .build());
