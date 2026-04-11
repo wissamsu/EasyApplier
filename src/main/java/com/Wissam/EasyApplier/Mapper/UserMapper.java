@@ -49,6 +49,9 @@ public interface UserMapper {
       @Mapping(target = "updatedAt", ignore = true),
       @Mapping(target = "uuid", ignore = true),
       @Mapping(target = "verified", ignore = true),
+      @Mapping(target = "password", ignore = true),
+      @Mapping(target = "email", ignore = true),
+      @Mapping(target = "resumeLink", ignore = true),
       @Mapping(target = "role", ignore = true),
       @Mapping(target = "id", ignore = true),
       @Mapping(target = "authorities", ignore = true)

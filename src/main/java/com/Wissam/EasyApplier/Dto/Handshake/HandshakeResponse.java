@@ -18,6 +18,4 @@ public class HandshakeResponse {
 
   private String email;
 
-  private String password;
-
 }

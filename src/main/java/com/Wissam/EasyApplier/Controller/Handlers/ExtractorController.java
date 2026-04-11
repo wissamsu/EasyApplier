@@ -1,8 +1,8 @@
 package com.Wissam.EasyApplier.Controller.Handlers;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Wissam.EasyApplier.Extractions.Jsoup.Jobs.GeneralJobExtractions;
@@ -22,23 +22,23 @@ public class ExtractorController {
   private final HandshakeEasyJobExtractor handshakeEasyJobExtractor;
   private final GeneralJobExtractions jobsExtractor;
 
-  @GetMapping("/extractLinkedinJobs/{jobTitle}")
+  @PostMapping("/extractLinkedinJobs/{jobTitle}")
   public void extractLinkedinJobs(String jobTitle, @AuthenticationPrincipal User user) {
     extractor.jobsExtractor(jobTitle, user);
   }
 
-  @GetMapping("/extractCafeJobs/{jobTitle}")
+  @PostMapping("/extractCafeJobs/{jobTitle}")
   public void extractCafeJobs(@PathVariable String jobTitle, @AuthenticationPrincipal User user) {
     jobExtractor.jobExtractor(user, jobTitle);
   }
 
-  @GetMapping("/extractHandshakeJobs/{jobTitle}")
+  @PostMapping("/extractHandshakeJobs/{jobTitle}")
   public void extractHandshakeJobs(@PathVariable String jobTitle,
       @AuthenticationPrincipal User user) throws InterruptedException {
     handshakeEasyJobExtractor.jobsExtractor(jobTitle, user);
   }
 
-  @GetMapping("/extractGeneralJobs/{jobTitle}")
+  @PostMapping("/extractGeneralJobs/{jobTitle}")
   public void extractGeneralJobs(String jobTitle, @AuthenticationPrincipal User user) {
     jobsExtractor.jobsExtractor(jobTitle, user);
   }

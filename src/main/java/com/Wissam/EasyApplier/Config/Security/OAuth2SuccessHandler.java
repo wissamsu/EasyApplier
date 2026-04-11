@@ -3,6 +3,8 @@ package com.Wissam.EasyApplier.Config.Security;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -13,7 +15,6 @@ import com.Wissam.EasyApplier.Enums.UserRole;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
   private final UserRepository userRepo;
   @Value("${frontend.host.url}")
   private String frontendHostUrl;
+  @Value("${jwt.expiration}")
+  private long jwtExpirationMs;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -55,14 +58,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     String token = jwtUtils.generateToken(user.getEmail());
 
-    Cookie cookie = new Cookie("jwt", token);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(request.isSecure());
-    cookie.setPath("/");
-    cookie.setMaxAge(7 * 24 * 60 * 60);
-
     log.info("OAuth2 login 4");
-    response.addCookie(cookie);
+    ResponseCookie cookie = ResponseCookie.from("jwt", token)
+        .httpOnly(true)
+        .secure(request.isSecure())
+        .sameSite("Lax")
+        .path("/")
+        .maxAge(Math.max(1, jwtExpirationMs / 1000))
+        .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     response.sendRedirect(frontendHostUrl + "/Home");
   }
 }

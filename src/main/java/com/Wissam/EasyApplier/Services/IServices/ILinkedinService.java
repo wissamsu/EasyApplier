@@ -10,6 +10,8 @@ public interface ILinkedinService {
 
   LinkedinResponse getLinkedinByEmail(String email);
 
+  LinkedinResponse getLinkedin(User user);
+
   LinkedinResponse createLinkedin(LinkedinRequest linkedinRequest, User user);
 
   LinkedinResponse addLi_AtCookie(User user, String liAtCookie);

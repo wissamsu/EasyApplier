@@ -54,7 +54,7 @@ public class HandshakeUtils {
   }
 
   public Path getContextPath(UUID userId) {
-    Path dir = Paths.get("contexts");
+    Path dir = Paths.get(System.getProperty("user.home"), ".easyapplier", "contexts");
     try {
       Files.createDirectories(dir);
     } catch (IOException e) {

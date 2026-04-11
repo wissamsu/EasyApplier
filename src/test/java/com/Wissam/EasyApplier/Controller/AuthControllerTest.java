@@ -74,7 +74,6 @@ class AuthControllerTest {
         .lastName("Doe")
         .verified(true)
         .role(UserRole.ROLE_USER)
-        .uuid(UUID.randomUUID())
         .build();
   }
 
@@ -187,7 +186,7 @@ class AuthControllerTest {
           .param("password", "password"))
           .andExpect(status().isOk())
           .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
-              .string("User with email existing@example.com already exists"));
+              .string("If the email is available, a verification email will be sent"));
     }
   }
 }

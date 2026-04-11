@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,32 +33,43 @@ public class UserController {
 
   private final IUserService userService;
 
+  @GetMapping("/me")
+  public UserResponse getCurrentUser(@AuthenticationPrincipal User user) {
+    return userService.getCurrentUser(user);
+  }
+
   @GetMapping("/email/{email}")
+  @PreAuthorize("hasRole('ADMIN')")
   public UserResponse findUserByEmail(@PathVariable String email) {
     return userService.findUserByEmail(email);
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public UserResponse findUserById(@PathVariable Long id) {
     return userService.findUserById(id);
   }
 
   @GetMapping("/all")
+  @PreAuthorize("hasRole('ADMIN')")
   public List<UserResponse> getAllUsers() {
     return userService.getAllUsers();
   }
 
   @GetMapping("/role/{role}")
+  @PreAuthorize("hasRole('ADMIN')")
   public List<UserResponse> getAllUsersByRole(@PathVariable UserRole role) {
     return userService.getAllUsersByRole(role);
   }
 
   @GetMapping("/linkedinId/{linkedinId}")
+  @PreAuthorize("hasRole('ADMIN')")
   public UserResponse findUserByLinkedinId(@PathVariable Long linkedinId) {
     return userService.findUserByLinkedinId(linkedinId);
   }
 
   @GetMapping("/linkedinEmail/{linkedinEmail}")
+  @PreAuthorize("hasRole('ADMIN')")
   public UserResponse findUserByLinkedinEmail(@PathVariable String linkedinEmail) {
     return userService.findUserByLinkedinEmail(linkedinEmail);
   }

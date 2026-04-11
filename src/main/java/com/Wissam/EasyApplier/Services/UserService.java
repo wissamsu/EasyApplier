@@ -1,7 +1,9 @@
 package com.Wissam.EasyApplier.Services;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +24,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
+
+  private static final long MAX_RESUME_FILE_SIZE = 5 * 1024 * 1024;
+  private static final Set<String> ALLOWED_RESUME_CONTENT_TYPES = Set.of(
+      MediaType.APPLICATION_PDF_VALUE,
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
   private final UserRepository userRepo;
   private final UserMapper userMapper;
@@ -75,6 +83,12 @@ public class UserService implements IUserService {
     if (file.isEmpty()) {
       throw new IllegalArgumentException("Resume file must not be empty");
     }
+    if (file.getSize() > MAX_RESUME_FILE_SIZE) {
+      throw new IllegalArgumentException("Resume file must be 5 MB or smaller");
+    }
+    if (file.getContentType() == null || !ALLOWED_RESUME_CONTENT_TYPES.contains(file.getContentType())) {
+      throw new IllegalArgumentException("Only PDF, DOC, and DOCX resumes are allowed");
+    }
 
     try {
       var uploadResult = cloudinary.uploader().upload(
@@ -99,6 +113,13 @@ public class UserService implements IUserService {
   public UserResponse updateUser(UserRequest userRequest, User user) {
     userMapper.updateUserFromRequest(user, userRequest);
     return userMapper.toUserResponse(userRepo.save(user));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public UserResponse getCurrentUser(User user) {
+    return userMapper.toUserResponse(userRepo.findById(user.getId())
+        .orElseThrow(() -> new UserNotFoundException("User with id " + user.getId() + " not found")));
   }
 
 }

@@ -1,5 +1,6 @@
 package com.Wissam.EasyApplier.Controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class HandshakeController {
 
   @GetMapping("/email/{email}")
   @Operation(summary = "Get handshake by email")
+  @PreAuthorize("hasRole('ADMIN')")
   public HandshakeResponse getHandshakeByEmail(@PathVariable String email) {
     return handshakeService.getHandshakeByEmail(email);
   }

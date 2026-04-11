@@ -132,6 +132,30 @@ class LinkedinServiceTest {
     }
 
     @Nested
+    @DisplayName("getLinkedin Tests")
+    class GetLinkedinTests {
+
+        @Test
+        @DisplayName("should return current users linkedin profile")
+        void shouldReturnCurrentUsersLinkedinProfile() {
+            testUser.setLinkedin(testLinkedin);
+            when(linkedinMapper.toLinkedinResponse(testLinkedin)).thenReturn(testLinkedinResponse);
+
+            LinkedinResponse result = linkedinService.getLinkedin(testUser);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getEmail()).isEqualTo("linkedin@example.com");
+        }
+
+        @Test
+        @DisplayName("should throw when current user has no linkedin profile")
+        void shouldThrowWhenCurrentUserHasNoLinkedinProfile() {
+            assertThatThrownBy(() -> linkedinService.getLinkedin(testUser))
+                    .isInstanceOf(LinkedinNotFoundException.class);
+        }
+    }
+
+    @Nested
     @DisplayName("createLinkedin Tests")
     class CreateLinkedinTests {
 

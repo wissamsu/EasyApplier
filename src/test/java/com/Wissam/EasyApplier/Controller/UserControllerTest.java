@@ -2,13 +2,13 @@ package com.Wissam.EasyApplier.Controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,13 +22,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.Wissam.EasyApplier.Config.Security.CustomUserDetailsService;
-import com.Wissam.EasyApplier.Config.Security.OAuth2SuccessHandler;
 import com.Wissam.EasyApplier.Config.Security.FilterChains.JwtFilterChain;
+import com.Wissam.EasyApplier.Config.Security.OAuth2SuccessHandler;
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
 import com.Wissam.EasyApplier.Dto.User.UserRequest;
 import com.Wissam.EasyApplier.Dto.User.UserResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
-import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Services.IServices.IUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -69,76 +68,63 @@ class UserControllerTest {
         .phoneNumber("1234567890")
         .verified(true)
         .role(UserRole.ROLE_USER)
-        .uuid(UUID.randomUUID())
         .build();
   }
 
   @Nested
-  @DisplayName("findUserByEmail Tests")
-  class FindUserByEmailTests {
+  @DisplayName("getCurrentUser Tests")
+  class GetCurrentUserTests {
 
     @Test
     @WithMockUser
-    @DisplayName("should return user by email")
-    void shouldReturnUserByEmail() throws Exception {
-      when(userService.findUserByEmail("test@example.com")).thenReturn(testUserResponse);
+    @DisplayName("should return current user")
+    void shouldReturnCurrentUser() throws Exception {
+      when(userService.getCurrentUser(any())).thenReturn(testUserResponse);
 
-      mockMvc.perform(get("/user/email/test@example.com")
-          .param("email", "test@example.com"))
+      mockMvc.perform(get("/user/me"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.email").value("test@example.com"))
-          .andExpect(jsonPath("$.firstName").value("John"));
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("should throw exception when user not found by email")
-    void shouldThrowExceptionWhenUserNotFoundByEmail() throws Exception {
-      when(userService.findUserByEmail("nonexistent@example.com"))
-          .thenThrow(new UserNotFoundException("User not found"));
-
-      mockMvc.perform(get("/user/email/nonexistent@example.com")
-          .param("email", "nonexistent@example.com"))
-          .andExpect(status().isNotFound());
+          .andExpect(jsonPath("$.email").value("test@example.com"));
     }
   }
 
   @Nested
-  @DisplayName("findUserById Tests")
-  class FindUserByIdTests {
+  @DisplayName("admin lookup Tests")
+  class AdminLookupTests {
 
     @Test
-    @WithMockUser
-    @DisplayName("should return user by id")
-    void shouldReturnUserById() throws Exception {
-      when(userService.findUserById(1L)).thenReturn(testUserResponse);
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return user by email for admin")
+    void shouldReturnUserByEmailForAdmin() throws Exception {
+      when(userService.findUserByEmail("test@example.com")).thenReturn(testUserResponse);
 
-      mockMvc.perform(get("/user/1"))
+      mockMvc.perform(get("/user/email/test@example.com"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id").value(1))
           .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
     @Test
     @WithMockUser
-    @DisplayName("should throw exception when user not found by id")
-    void shouldThrowExceptionWhenUserNotFoundById() throws Exception {
-      when(userService.findUserById(999L))
-          .thenThrow(new UserNotFoundException("User not found"));
-
-      mockMvc.perform(get("/user/999"))
-          .andExpect(status().isNotFound());
+    @DisplayName("should forbid user lookup by email for non admin")
+    void shouldForbidUserLookupByEmailForNonAdmin() throws Exception {
+      mockMvc.perform(get("/user/email/test@example.com"))
+          .andExpect(status().isForbidden());
     }
-  }
-
-  @Nested
-  @DisplayName("getAllUsers Tests")
-  class GetAllUsersTests {
 
     @Test
-    @WithMockUser
-    @DisplayName("should return all users")
-    void shouldReturnAllUsers() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return user by id for admin")
+    void shouldReturnUserByIdForAdmin() throws Exception {
+      when(userService.findUserById(1L)).thenReturn(testUserResponse);
+
+      mockMvc.perform(get("/user/1"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return all users for admin")
+    void shouldReturnAllUsersForAdmin() throws Exception {
       when(userService.getAllUsers()).thenReturn(List.of(testUserResponse));
 
       mockMvc.perform(get("/user/all"))
@@ -148,40 +134,27 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("should return empty list when no users")
-    void shouldReturnEmptyListWhenNoUsers() throws Exception {
-      when(userService.getAllUsers()).thenReturn(List.of());
-
+    @DisplayName("should forbid listing all users for non admin")
+    void shouldForbidListingAllUsersForNonAdmin() throws Exception {
       mockMvc.perform(get("/user/all"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$").isEmpty());
+          .andExpect(status().isForbidden());
     }
-  }
-
-  @Nested
-  @DisplayName("getAllUsersByRole Tests")
-  class GetAllUsersByRoleTests {
 
     @Test
-    @WithMockUser
-    @DisplayName("should return users by role")
-    void shouldReturnUsersByRole() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return users by role for admin")
+    void shouldReturnUsersByRoleForAdmin() throws Exception {
       when(userService.getAllUsersByRole(UserRole.ROLE_USER)).thenReturn(List.of(testUserResponse));
 
       mockMvc.perform(get("/user/role/ROLE_USER"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$[0].role").value("ROLE_USER"));
     }
-  }
-
-  @Nested
-  @DisplayName("findUserByLinkedinId Tests")
-  class FindUserByLinkedinIdTests {
 
     @Test
-    @WithMockUser
-    @DisplayName("should return user by linkedin id")
-    void shouldReturnUserByLinkedinId() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return user by linkedin id for admin")
+    void shouldReturnUserByLinkedinIdForAdmin() throws Exception {
       when(userService.findUserByLinkedinId(1L)).thenReturn(testUserResponse);
 
       mockMvc.perform(get("/user/linkedinId/1"))
@@ -213,6 +186,7 @@ class UserControllerTest {
       when(userService.updateUser(any(UserRequest.class), any())).thenReturn(updatedResponse);
 
       mockMvc.perform(put("/user/update")
+          .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())

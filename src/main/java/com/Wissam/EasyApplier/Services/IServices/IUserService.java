@@ -27,4 +27,6 @@ public interface IUserService {
 
   public UserResponse updateUser(UserRequest userRequest, User user);
 
+  public UserResponse getCurrentUser(User user);
+
 }

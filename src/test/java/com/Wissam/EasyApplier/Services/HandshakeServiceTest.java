@@ -73,7 +73,6 @@ class HandshakeServiceTest {
     testHandshakeResponse = HandshakeResponse.builder()
         .id(1L)
         .email("handshake@example.com")
-        .password("handshakePassword")
         .build();
   }
 

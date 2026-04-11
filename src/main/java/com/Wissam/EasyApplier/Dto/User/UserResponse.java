@@ -1,8 +1,6 @@
 package com.Wissam.EasyApplier.Dto.User;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.Wissam.EasyApplier.Dto.Handshake.HandshakeResponse;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
 import com.Wissam.EasyApplier.Enums.UserRole;
@@ -35,8 +33,6 @@ public class UserResponse {
   private boolean verified;
 
   private UserRole role;
-
-  private UUID uuid;
 
   private LinkedinResponse linkedin;
   private HandshakeResponse handshake;

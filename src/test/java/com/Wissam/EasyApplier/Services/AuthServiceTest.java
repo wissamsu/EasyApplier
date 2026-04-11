@@ -1,7 +1,6 @@
 package com.Wissam.EasyApplier.Services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.Wissam.EasyApplier.Enums.UserRole;
-import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.UserNotFoundException;
 import com.Wissam.EasyApplier.Model.User;
 import com.Wissam.EasyApplier.Repository.UserRepository;
 
@@ -99,12 +97,13 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("should throw exception when user not found")
-        void shouldThrowExceptionWhenUserNotFound() {
+        @DisplayName("should return false when user not found")
+        void shouldReturnFalseWhenUserNotFound() {
             when(userRepo.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> authService.login("nonexistent@example.com", "password"))
-                    .isInstanceOf(UserNotFoundException.class);
+            boolean result = authService.login("nonexistent@example.com", "password");
+
+            assertThat(result).isFalse();
         }
 
         @Test

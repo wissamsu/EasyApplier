@@ -3,8 +3,7 @@ package com.Wissam.EasyApplier.Controller.Handlers;
 import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/handshakeAuto")
 @RequiredArgsConstructor
 @Tag(name = "Handshake Automation")
@@ -28,7 +26,7 @@ public class HandshakeAutoController {
   private final JobInfoService jobInfoService;
   private final JobInfoMapper jobInfoMapper;
 
-  @GetMapping("/applyToAllSavedJobs")
+  @PostMapping("/applyToAllSavedJobs")
   public void applyToAllSavedJobs(@AuthenticationPrincipal User user) {
     List<JobInfoResponse> jobInfos = jobInfoService.findAll();
     for (JobInfoResponse jobInfo : jobInfos) {

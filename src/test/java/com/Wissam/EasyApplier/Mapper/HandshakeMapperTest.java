@@ -40,7 +40,6 @@ class HandshakeMapperTest {
     testHandshakeResponse = HandshakeResponse.builder()
         .id(1L)
         .email("handshake@example.com")
-        .password("password")
         .build();
   }
 

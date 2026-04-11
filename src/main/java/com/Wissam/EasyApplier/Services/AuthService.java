@@ -30,7 +30,12 @@ public class AuthService implements IAuthService {
 
   @Override
   public boolean login(String email, String password) {
-    User user = userRepo.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+    User user = userRepo.findByEmail(email).orElse(null);
+
+    if (user == null) {
+      log.warn("Login failed for {}", email);
+      return false;
+    }
 
     if (user.isVerified()) {
       try {

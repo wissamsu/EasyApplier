@@ -279,6 +279,17 @@ class UserServiceTest {
           .isInstanceOf(RuntimeException.class)
           .hasMessageContaining("Failed to upload resume");
     }
+
+    @Test
+    @DisplayName("should reject unsupported resume content type")
+    void shouldRejectUnsupportedResumeContentType() {
+      MockMultipartFile file = new MockMultipartFile(
+          "file", "resume.exe", "application/octet-stream", "test content".getBytes());
+
+      assertThatThrownBy(() -> userService.uploadResume(testUser, file))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("Only PDF, DOC, and DOCX resumes are allowed");
+    }
   }
 
   @Nested
@@ -300,6 +311,23 @@ class UserServiceTest {
       assertThat(result).isNotNull();
       verify(userMapper).updateUserFromRequest(testUser, request);
       verify(userRepo).save(testUser);
+    }
+  }
+
+  @Nested
+  @DisplayName("getCurrentUser Tests")
+  class GetCurrentUserTests {
+
+    @Test
+    @DisplayName("should return current user response")
+    void shouldReturnCurrentUserResponse() {
+      when(userRepo.findById(1L)).thenReturn(Optional.of(testUser));
+      when(userMapper.toUserResponse(testUser)).thenReturn(testUserResponse);
+
+      UserResponse result = userService.getCurrentUser(testUser);
+
+      assertThat(result).isEqualTo(testUserResponse);
+      verify(userRepo).findById(1L);
     }
   }
 }

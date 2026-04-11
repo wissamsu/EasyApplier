@@ -2,6 +2,7 @@ package com.Wissam.EasyApplier.Controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,12 +19,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.Wissam.EasyApplier.Config.Security.CustomUserDetailsService;
-import com.Wissam.EasyApplier.Config.Security.OAuth2SuccessHandler;
 import com.Wissam.EasyApplier.Config.Security.FilterChains.JwtFilterChain;
+import com.Wissam.EasyApplier.Config.Security.OAuth2SuccessHandler;
 import com.Wissam.EasyApplier.Config.Security.SecurityUtils.JwtUtils;
 import com.Wissam.EasyApplier.Dto.Linkedin.LinkedinResponse;
-import com.Wissam.EasyApplier.Exceptions.ServiceExceptions.LinkedinNotFoundException;
 import com.Wissam.EasyApplier.Services.IServices.ILinkedinService;
+import com.Wissam.EasyApplier.Utils.LinkedinUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(LinkedinController.class)
@@ -48,6 +49,9 @@ class LinkedinControllerTest {
   @MockitoBean
   private OAuth2SuccessHandler oauth2SuccessHandler;
 
+  @MockitoBean
+  private LinkedinUtils linkedinUtils;
+
   @Autowired
   private ObjectMapper objectMapper;
 
@@ -62,13 +66,29 @@ class LinkedinControllerTest {
   }
 
   @Nested
-  @DisplayName("getLinkedinById Tests")
-  class GetLinkedinByIdTests {
+  @DisplayName("getLinkedin Tests")
+  class GetLinkedinTests {
 
     @Test
     @WithMockUser
-    @DisplayName("should return linkedin by id")
-    void shouldReturnLinkedinById() throws Exception {
+    @DisplayName("should return current users linkedin profile")
+    void shouldReturnCurrentUsersLinkedinProfile() throws Exception {
+      when(linkedinService.getLinkedin(any())).thenReturn(testLinkedinResponse);
+
+      mockMvc.perform(get("/linkedin/me"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.email").value("linkedin@example.com"));
+    }
+  }
+
+  @Nested
+  @DisplayName("admin lookup Tests")
+  class AdminLookupTests {
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return linkedin by id for admin")
+    void shouldReturnLinkedinByIdForAdmin() throws Exception {
       when(linkedinService.getLinkedinById(1L)).thenReturn(testLinkedinResponse);
 
       mockMvc.perform(get("/linkedin/1"))
@@ -79,28 +99,19 @@ class LinkedinControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when linkedin not found")
-    void shouldReturn404WhenLinkedinNotFound() throws Exception {
-      when(linkedinService.getLinkedinById(999L))
-          .thenThrow(new LinkedinNotFoundException("Linkedin not found"));
-
+    @DisplayName("should forbid linkedin lookup by id for non admin")
+    void shouldForbidLinkedinLookupByIdForNonAdmin() throws Exception {
       mockMvc.perform(get("/linkedin/999"))
-          .andExpect(status().isNotFound());
+          .andExpect(status().isForbidden());
     }
-  }
-
-  @Nested
-  @DisplayName("getLinkedinByEmail Tests")
-  class GetLinkedinByEmailTests {
 
     @Test
-    @WithMockUser
-    @DisplayName("should return linkedin by email")
-    void shouldReturnLinkedinByEmail() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("should return linkedin by email for admin")
+    void shouldReturnLinkedinByEmailForAdmin() throws Exception {
       when(linkedinService.getLinkedinByEmail("linkedin@example.com")).thenReturn(testLinkedinResponse);
 
-      mockMvc.perform(get("/linkedin/email/linkedin@example.com")
-          .param("email", "linkedin@example.com"))
+      mockMvc.perform(get("/linkedin/email/linkedin@example.com"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.email").value("linkedin@example.com"));
     }
@@ -116,7 +127,10 @@ class LinkedinControllerTest {
     void shouldAddLiAtCookie() throws Exception {
       when(linkedinService.addLi_AtCookie(any(), any())).thenReturn(testLinkedinResponse);
 
-      mockMvc.perform(put("/linkedin/cookie/li_at=xxxxx"))
+      mockMvc.perform(put("/linkedin/cookie")
+          .with(csrf())
+          .contentType("text/plain")
+          .content("li_at=xxxxx"))
           .andExpect(status().isOk());
     }
   }

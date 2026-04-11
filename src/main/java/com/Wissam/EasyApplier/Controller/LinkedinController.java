@@ -1,5 +1,6 @@
 package com.Wissam.EasyApplier.Controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,14 +34,22 @@ public class LinkedinController {
   private final ILinkedinService linkedinService;
   private final LinkedinUtils linkedinUtils;
 
+  @GetMapping("/me")
+  @Operation(summary = "Get current user's Linkedin profile")
+  public ResponseEntity<LinkedinResponse> getLinkedin(@AuthenticationPrincipal User user) {
+    return ResponseEntity.ok(linkedinService.getLinkedin(user));
+  }
+
   @GetMapping("/{id}")
   @Operation(summary = "Get Linkedin by id")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<LinkedinResponse> getLinkedinById(@PathVariable Long id) {
     return ResponseEntity.ok(linkedinService.getLinkedinById(id));
   }
 
   @GetMapping("/email/{email}")
   @Operation(summary = "Get Linkedin by email")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<LinkedinResponse> getLinkedinByEmail(@PathVariable String email) {
     return ResponseEntity.ok(linkedinService.getLinkedinByEmail(email));
   }
@@ -58,8 +67,8 @@ public class LinkedinController {
     return ResponseEntity.ok(linkedinUtils.checkOrgetLiAtCookie(userDetails));
   }
 
-  @PutMapping("/cookie/{liAtCookie}")
-  public LinkedinResponse addLi_AtCookie(@AuthenticationPrincipal User user, @PathVariable String liAtCookie) {
+  @PutMapping("/cookie")
+  public LinkedinResponse addLi_AtCookie(@AuthenticationPrincipal User user, @RequestBody String liAtCookie) {
     return linkedinService.addLi_AtCookie(user, liAtCookie);
   }
 

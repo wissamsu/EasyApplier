@@ -39,6 +39,15 @@ public class LinkedinService implements ILinkedinService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public LinkedinResponse getLinkedin(User user) {
+    if (user.getLinkedin() == null) {
+      throw new LinkedinNotFoundException("Linkedin profile not found for user");
+    }
+    return linkedinMapper.toLinkedinResponse(user.getLinkedin());
+  }
+
+  @Override
   @Transactional
   public LinkedinResponse createLinkedin(LinkedinRequest linkedinRequest, User user) {
     Linkedin linkedin = linkedinMapper.toLinkedin(linkedinRequest);

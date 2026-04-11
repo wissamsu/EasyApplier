@@ -2,6 +2,9 @@ package com.Wissam.EasyApplier.Controller;
 
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +22,6 @@ import com.Wissam.EasyApplier.Repository.UserRepository;
 import com.Wissam.EasyApplier.Services.IServices.IAuthService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,8 @@ public class AuthController {
   private final JwtUtils jwtUtils;
   private final UserRepository userRepo;
   private final KafkaEventPublisher kafkaEventPublisher;
+  @Value("${jwt.expiration}")
+  private long jwtExpirationMs;
 
   @GetMapping("/failure")
   public String failure() {
@@ -63,12 +67,14 @@ public class AuthController {
 
     if (authenticated) {
       String token = jwtUtils.generateToken(email);
-      Cookie cookie = new Cookie("jwt", token);
-      cookie.setMaxAge(3600);
-      cookie.setSecure(request.isSecure());
-      cookie.setHttpOnly(true);
-      cookie.setPath("/");
-      response.addCookie(cookie);
+      ResponseCookie cookie = ResponseCookie.from("jwt", token)
+          .httpOnly(true)
+          .secure(request.isSecure())
+          .sameSite("Lax")
+          .path("/")
+          .maxAge(Math.max(1, jwtExpirationMs / 1000))
+          .build();
+      response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     return authenticated;
@@ -78,7 +84,7 @@ public class AuthController {
   @PostMapping("/register")
   public String register(@RequestParam String email, @RequestParam String password) {
     if (userRepo.existsByEmail(email)) {
-      return "User with email " + email + " already exists";
+      return "If the email is available, a verification email will be sent";
     }
     UUID uuid = UUID.randomUUID();
     String result = authService.register(email, password, uuid);
