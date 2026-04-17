@@ -45,7 +45,7 @@ public class HandshakeEasyJobExtractor {
     synchronized (lock) {
       try (Playwright playwright = Playwright.create();
           Browser browser = playwright.chromium()
-              .launch(new LaunchOptions().setHeadless(false).setSlowMo(300 + Math.random() * 1300));
+              .launch(new LaunchOptions().setHeadless(true).setSlowMo(300 + Math.random() * 1300));
           BrowserContext context = handshakeUtils.createOrLoadContext(statePath, browser);
           Page page = context.newPage();) {
 
